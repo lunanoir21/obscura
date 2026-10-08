@@ -11,9 +11,19 @@ Item {
 
     property var pal
     property real u: 1
-    property string timerFont: "Space Mono"
-    // Doto is a dot matrix: it needs weight and size to stay legible in a bar.
+    // From the widget settings (Görünüm tab).
+    readonly property string timerFont: ObscuraStore.timerFont
     readonly property bool dotFont: timerFont === "Doto"
+    readonly property string style: ObscuraStore.buttonStyle
+
+    property bool panelOpen: false
+    property real lastCleared: 0
+    function togglePanel() {
+        if (panelOpen)
+            panelOpen = false;
+        else if (Date.now() - lastCleared > 250)
+            panelOpen = true;
+    }
     property string uiFont: "Bricolage Grotesque"
 
     readonly property string mode: {
@@ -53,12 +63,13 @@ Item {
             case "problem":
                 return problemRow.implicitWidth + 28 * root.u;
             default:
-                return 48 * root.u;
+                return root.style === "pill" ? idleRow.implicitWidth + 28 * root.u : root.style === "icon" ? 36 * root.u : 48 * root.u;
             }
         }
-        color: Qt.rgba(root.pal.base.r, root.pal.base.g, root.pal.base.b, 0.75)
+        readonly property bool bare: root.style === "icon" && root.mode === "idle"
+        color: bare ? "transparent" : Qt.rgba(root.pal.base.r, root.pal.base.g, root.pal.base.b, 0.75)
         border.width: 1
-        border.color: Qt.rgba(root.pal.text.r, root.pal.text.g, root.pal.text.b, root.hovered ? 0.15 : 0.08)
+        border.color: bare ? "transparent" : Qt.rgba(root.pal.text.r, root.pal.text.g, root.pal.text.b, root.hovered ? 0.15 : 0.08)
         Behavior on width {
             NumberAnimation {
                 duration: 400
@@ -82,31 +93,46 @@ Item {
                     easing.type: Easing.OutCubic
                 }
             }
-            Rectangle {
+            Row {
+                id: idleRow
                 anchors.centerIn: parent
-                width: 18 * root.u
-                height: width
-                radius: width / 2
-                color: "transparent"
-                border.width: 1.6 * root.u
-                border.color: root.pal.overlay1
-                opacity: root.dim ? 0.45 : (root.hovered ? 1 : 0.8)
-                Behavior on opacity {
-                    NumberAnimation {
-                        duration: 200
-                    }
-                }
+                spacing: 8 * root.u
                 Rectangle {
-                    anchors.centerIn: parent
-                    width: 6 * root.u
+                    id: ring
+                    anchors.verticalCenter: parent.verticalCenter
+                    width: 18 * root.u
                     height: width
                     radius: width / 2
-                    color: root.hovered && !root.dim ? root.pal.red : root.pal.overlay1
-                    Behavior on color {
-                        ColorAnimation {
+                    color: "transparent"
+                    border.width: 1.6 * root.u
+                    border.color: root.pal.overlay1
+                    opacity: root.dim ? 0.45 : (root.hovered ? 1 : 0.8)
+                    Behavior on opacity {
+                        NumberAnimation {
                             duration: 200
                         }
                     }
+                    Rectangle {
+                        anchors.centerIn: parent
+                        width: 6 * root.u
+                        height: width
+                        radius: width / 2
+                        color: root.hovered && !root.dim ? root.pal.red : root.pal.overlay1
+                        Behavior on color {
+                            ColorAnimation {
+                                duration: 200
+                            }
+                        }
+                    }
+                }
+                Text {
+                    visible: root.style === "pill"
+                    anchors.verticalCenter: parent.verticalCenter
+                    text: "Kayıt"
+                    color: root.dim ? root.pal.overlay1 : root.pal.text
+                    font.family: root.uiFont
+                    font.pixelSize: 14 * root.u
+                    font.weight: Font.DemiBold
                 }
             }
         }
@@ -174,8 +200,8 @@ Item {
                     text: ObscuraStore.clock
                     color: root.mode === "paused" ? root.pal.overlay2 : root.pal.text
                     font.family: root.timerFont
-                    font.pixelSize: (root.dotFont ? 18 : 15) * root.u
-                    font.weight: root.dotFont ? Font.Black : Font.Medium
+                    font.pixelSize: ObscuraStore.timerSize * root.u
+                    font.weight: root.dotFont ? Font.Black : Font.Normal
                     font.letterSpacing: 0.3 * root.u
                 }
                 Rectangle {
@@ -291,8 +317,20 @@ Item {
         onClicked: mouse => {
             if (mouse.button === Qt.RightButton)
                 ObscuraStore.pause();
-            else if (root.mode === "idle")
-                ObscuraStore.toggle();
+            else if (root.mode === "rec" || root.mode === "paused" || root.mode === "idle")
+                root.togglePanel();
+        }
+    }
+
+    ObscuraPanel {
+        pal: root.pal
+        u: root.u
+        uiFont: root.uiFont
+        anchorItem: body
+        open: root.panelOpen
+        onCloseRequested: {
+            root.lastCleared = Date.now();
+            root.panelOpen = false;
         }
     }
 }

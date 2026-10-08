@@ -4,7 +4,7 @@ A thin control layer for OBS Studio on Hyprland. A small button in your Quickshe
 
 obscura drives the OBS you already have through its built-in WebSocket server (obs-websocket v5). It does not encode anything itself, so your scenes, sources and encoder settings stay in OBS.
 
-> Status: early. The command line and the bar pill work; the panel is next. See the roadmap below.
+> Status: early. The command line, the bar pill and the panel work; shortcut, hooks and level meters are next. See the roadmap below.
 
 ## Design goals
 
@@ -34,7 +34,7 @@ bind = SUPER ALT, R, exec, obscura toggle
 
 - [x] M0: authentication, start/stop/pause from the CLI
 - [x] M1: `obscura watch` and the bar pill (live OBS test pending)
-- [ ] M2: panel (scene, sources, replay buffer, recording settings)
+- [x] M2: panel (scene, audio sources, replay buffer, recording settings, widget look)
 - [ ] M3: shortcut, settings, hooks
 
 ## License

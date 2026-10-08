@@ -119,8 +119,10 @@ Singleton {
     // Audio levels (0..1 per input), streamed only while the panel shows them.
     property var levels: ({})
     property bool wantMeters: false
-    onWantMetersChanged: if (!wantMeters)
-        levels = ({})
+    onWantMetersChanged: {
+        if (!wantMeters)
+            levels = ({});
+    }
 
     Process {
         id: meterProc

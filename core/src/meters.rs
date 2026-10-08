@@ -42,32 +42,46 @@ trait Pipe: Sized {
 }
 impl Pipe for f64 {}
 
+/// Folds one meter event into the peaks gathered since the last report.
+pub fn fold_peaks(acc: &mut BTreeMap<String, f64>, event_inputs: &Value) {
+    for i in event_inputs.as_array().into_iter().flatten() {
+        let Some(name) = i["inputName"].as_str() else { continue };
+        let lvl = input_level(&i["inputLevelsMul"]);
+        let e = acc.entry(name.to_owned()).or_insert(0.0);
+        *e = e.max(lvl);
+    }
+}
+
 /// Returns when the connection ends or `emit` returns false (reader gone).
+///
+/// Every event updates the loudest peak seen since the last report, so a short
+/// spike between two reports is not lost; a report goes out at most every
+/// `MIN_GAP` and only when something moved.
 pub fn run(conn: &Connection, mut emit: impl FnMut(Option<&BTreeMap<String, f64>>) -> bool) {
     let Ok(mut client) = Client::connect(conn, events::INPUT_VOLUME_METERS) else { return };
     let mut last: BTreeMap<String, f64> = BTreeMap::new();
+    let mut acc: BTreeMap<String, f64> = BTreeMap::new();
     let mut last_sent = Instant::now() - MIN_GAP;
     loop {
         match client.next_event(Duration::from_secs(5)) {
             Ok(Some(ev)) => {
-                if ev["d"]["eventType"] != "InputVolumeMeters" || last_sent.elapsed() < MIN_GAP {
+                if ev["d"]["eventType"] != "InputVolumeMeters" {
                     continue;
                 }
-                let now: BTreeMap<String, f64> = ev["d"]["eventData"]["inputs"]
-                    .as_array()
-                    .into_iter()
-                    .flatten()
-                    .filter_map(|i| Some((i["inputName"].as_str()?.to_owned(), input_level(&i["inputLevelsMul"]))))
-                    .collect();
-                let moved = now.len() != last.len()
-                    || now.iter().any(|(k, v)| last.get(k).is_none_or(|o| (o - v).abs() > MIN_CHANGE));
-                if moved {
-                    if !emit(Some(&now)) {
-                        return;
-                    }
-                    last = now;
-                    last_sent = Instant::now();
+                fold_peaks(&mut acc, &ev["d"]["eventData"]["inputs"]);
+                if last_sent.elapsed() < MIN_GAP {
+                    continue;
                 }
+                let moved = acc.len() != last.len()
+                    || acc.iter().any(|(k, v)| last.get(k).is_none_or(|o| (o - v).abs() > MIN_CHANGE));
+                if moved && !emit(Some(&acc)) {
+                    return;
+                }
+                if moved {
+                    last = acc.clone();
+                }
+                acc.clear();
+                last_sent = Instant::now();
             }
             // Quiet connection: a heartbeat notices a reader that went away.
             Ok(None) => {
@@ -91,6 +105,15 @@ mod tests {
         assert!((level(1.0) - 1.0).abs() < 1e-9);
         assert!((level(0.1) - (40.0 / 60.0)).abs() < 1e-9); // -20 dB
         assert_eq!(level(0.000001), 0.0); // below the floor
+    }
+
+    #[test]
+    fn peaks_accumulate_between_reports() {
+        let mut acc = BTreeMap::new();
+        let ev = |p: f64| json!([{ "inputName": "Mic", "inputLevelsMul": [[0.0, p, p]] }]);
+        fold_peaks(&mut acc, &ev(0.5));
+        fold_peaks(&mut acc, &ev(0.01)); // quieter tick after a spike
+        assert!((acc["Mic"] - level(0.5)).abs() < 1e-9);
     }
 
     #[test]

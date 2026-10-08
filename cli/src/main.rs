@@ -22,6 +22,8 @@ enum Cmd {
     Toggle,
     /// Pause or resume
     Pause,
+    /// Print state changes as JSON lines until killed (used by the bar widget)
+    Watch,
     /// Check that OBS and its WebSocket server are reachable
     Doctor,
 }
@@ -38,6 +40,9 @@ fn run() -> Result<()> {
     let conn = Connection::discover();
     if matches!(cli.cmd, Cmd::Doctor) {
         return doctor(&conn);
+    }
+    if matches!(cli.cmd, Cmd::Watch) {
+        return watch(&conn);
     }
     let mut c = Client::connect(&conn, events::NONE)?;
     match cli.cmd {
@@ -73,7 +78,7 @@ fn run() -> Result<()> {
             }
         }
         Cmd::Pause => c.toggle_pause()?,
-        Cmd::Doctor => unreachable!(),
+        Cmd::Doctor | Cmd::Watch => unreachable!(),
     }
     Ok(())
 }
@@ -93,5 +98,17 @@ fn doctor(conn: &Connection) -> Result<()> {
         }
         Err(e) => println!("connection  failed: {e:#}"),
     }
+    Ok(())
+}
+
+fn watch(conn: &Connection) -> Result<()> {
+    use std::io::Write;
+    obscura_core::watch::run(conn, |state| {
+        let mut out = std::io::stdout().lock();
+        // A closed pipe means the widget is gone: stop instead of lingering.
+        state.map_or(true, |s| serde_json::to_writer(&mut out, s).is_ok())
+            && out.write_all(b"\n").is_ok()
+            && out.flush().is_ok()
+    });
     Ok(())
 }

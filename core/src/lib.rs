@@ -7,6 +7,7 @@ pub mod auth;
 pub mod client;
 pub mod config;
 pub mod paths;
+pub mod watch;
 
 pub use client::{Client, RecordStatus};
 pub use config::Connection;

@@ -103,7 +103,8 @@ Scope {
     }
 
     Variants {
-        model: Quickshell.screens
+        // No windows exist until a request arrives.
+        model: host.open ? Quickshell.screens : []
         PanelWindow {
             id: win
             required property var modelData

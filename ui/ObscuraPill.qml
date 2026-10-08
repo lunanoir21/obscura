@@ -17,7 +17,30 @@ Item {
     readonly property string style: ObscuraStore.buttonStyle
 
     property bool panelOpen: false
+    property bool blink: true
+    property bool panelAlive: false
     property real lastCleared: 0
+    onPanelOpenChanged: {
+        if (panelOpen) {
+            panelAlive = true;
+            aliveTimer.stop();
+        } else {
+            aliveTimer.restart();
+        }
+    }
+    Timer {
+        interval: 800
+        repeat: true
+        running: root.mode === "rec"
+        onTriggered: root.blink = !root.blink
+    }
+    // The panel exists only while it is open (plus its closing animation).
+    Timer {
+        id: aliveTimer
+        interval: 450
+        onTriggered: root.panelAlive = false
+    }
+
     function togglePanel() {
         if (panelOpen)
             panelOpen = false;
@@ -165,20 +188,9 @@ Item {
                         height: width
                         radius: width / 2
                         color: root.pal.red
-                        SequentialAnimation on opacity {
-                            running: root.mode === "rec"
-                            loops: Animation.Infinite
-                            NumberAnimation {
-                                to: 0.35
-                                duration: 600
-                                easing.type: Easing.InOutSine
-                            }
-                            NumberAnimation {
-                                to: 1
-                                duration: 600
-                                easing.type: Easing.InOutSine
-                            }
-                        }
+                        // A plain two-step blink: a continuous fade would redraw the
+                        // whole bar every frame for as long as the recording runs.
+                        opacity: root.blink ? 1 : 0.4
                     }
                     Row {
                         anchors.centerIn: parent
@@ -322,15 +334,18 @@ Item {
         }
     }
 
-    ObscuraPanel {
-        pal: root.pal
-        u: root.u
-        uiFont: root.uiFont
-        anchorItem: body
-        open: root.panelOpen
-        onCloseRequested: {
-            root.lastCleared = Date.now();
-            root.panelOpen = false;
+    Loader {
+        active: root.panelAlive
+        sourceComponent: ObscuraPanel {
+            pal: root.pal
+            u: root.u
+            uiFont: root.uiFont
+            anchorItem: body
+            open: root.panelOpen
+            onCloseRequested: {
+                root.lastCleared = Date.now();
+                root.panelOpen = false;
+            }
         }
     }
 }

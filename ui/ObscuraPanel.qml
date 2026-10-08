@@ -28,6 +28,9 @@ Item {
     readonly property bool active: ObscuraStore.active
     readonly property bool connected: ["idle", "starting", "recording", "paused", "stopping"].indexOf(ObscuraStore.state) >= 0
 
+    Component.onCompleted: if (open)
+        openChanged()
+
     onOpenChanged: {
         if (open) {
             shown = true;

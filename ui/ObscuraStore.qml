@@ -194,7 +194,8 @@ Singleton {
         }
         onExited: code => {
             root.error = code === 0 ? "" : ctlErr.text.trim().replace(/^obscura: /, "");
-            root.refreshInfo();
+            if (root.wantInfo)
+                root.refreshInfo();
             root.pump();
         }
     }

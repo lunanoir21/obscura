@@ -30,12 +30,25 @@ Bind it in Hyprland:
 bind = SUPER ALT, R, exec, obscura toggle
 ```
 
+## Screen-share picker
+
+OBS asks for the screen through the desktop portal each time it starts, and the stock dialog does not match the rest of the desktop. obscura ships a picker for xdg-desktop-portal-hyprland that is drawn by the Quickshell widget (screens, windows, "remember this choice"). If the widget is not running, the stock dialog appears, so sharing never depends on obscura.
+
+```sh
+obscura picker-setup install     # writes custom_picker_binary into ~/.config/hypr/xdph.conf
+systemctl --user restart xdg-desktop-portal-hyprland
+obscura picker-setup uninstall   # back to the stock dialog
+```
+
+Note: xdph does not say who is asking, so every app's share request (browser, Discord) uses this picker.
+
 ## Roadmap
 
 - [x] M0: authentication, start/stop/pause from the CLI
 - [x] M1: `obscura watch` and the bar pill (live OBS test pending)
 - [x] M2: panel (scene, audio sources, replay buffer, recording settings, widget look)
-- [ ] M3: shortcut, settings, hooks
+- [x] M3: screen-share picker
+- [ ] M4: shortcut, hooks, level meters
 
 ## License
 

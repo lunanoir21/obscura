@@ -72,6 +72,12 @@ Item {
         lineHeight: 1.25
     }
 
+    Binding {
+        target: ObscuraStore
+        property: "wantMeters"
+        value: root.open && root.tab === 0 && root.connected
+    }
+
     HyprlandFocusGrab {
         windows: [popup]
         active: root.open
@@ -315,23 +321,48 @@ Item {
                     }
                     Repeater {
                         model: root.info.inputs || []
-                        Row {
+                        Item {
+                            id: srcRow
                             required property var modelData
+                            width: parent.width
                             height: 36 * root.u
-                            spacing: 12 * root.u
-                            ObscuraSwitch {
+                            readonly property real lvl: modelData.muted ? 0 : (ObscuraStore.levels[modelData.name] || 0)
+                            Row {
+                                spacing: 12 * root.u
                                 anchors.verticalCenter: parent.verticalCenter
-                                pal: root.pal
-                                u: root.u
-                                on: !modelData.muted
-                                onToggled: ObscuraStore.act(["mute", modelData.name])
+                                ObscuraSwitch {
+                                    anchors.verticalCenter: parent.verticalCenter
+                                    pal: root.pal
+                                    u: root.u
+                                    on: !srcRow.modelData.muted
+                                    onToggled: ObscuraStore.act(["mute", srcRow.modelData.name])
+                                }
+                                Text {
+                                    anchors.verticalCenter: parent.verticalCenter
+                                    text: srcRow.modelData.name
+                                    color: srcRow.modelData.muted ? root.pal.overlay1 : root.pal.text
+                                    font.family: root.uiFont
+                                    font.pixelSize: 13 * root.u
+                                }
                             }
-                            Text {
+                            Rectangle {
+                                anchors.right: parent.right
                                 anchors.verticalCenter: parent.verticalCenter
-                                text: modelData.name
-                                color: modelData.muted ? root.pal.overlay1 : root.pal.text
-                                font.family: root.uiFont
-                                font.pixelSize: 13 * root.u
+                                width: 84 * root.u
+                                height: 4 * root.u
+                                radius: height / 2
+                                color: root.pal.surface1
+                                Rectangle {
+                                    height: parent.height
+                                    radius: parent.radius
+                                    width: parent.width * srcRow.lvl
+                                    color: srcRow.lvl > 0.92 ? root.pal.yellow : root.pal.text
+                                    Behavior on width {
+                                        NumberAnimation {
+                                            duration: 90
+                                        }
+                                    }
+                                }
                             }
                         }
                     }
@@ -618,6 +649,49 @@ Item {
                                 font.pixelSize: ObscuraStore.timerSize * root.u
                                 font.weight: ObscuraStore.timerFont === "Doto" ? Font.Black : Font.Normal
                             }
+                        }
+                    }
+                }
+                Column {
+                    width: parent.width
+                    spacing: 4 * root.u
+                    Cap {
+                        text: "Kayıt bitince"
+                    }
+                    Row {
+                        height: 34 * root.u
+                        spacing: 12 * root.u
+                        ObscuraSwitch {
+                            anchors.verticalCenter: parent.verticalCenter
+                            pal: root.pal
+                            u: root.u
+                            on: ObscuraStore.cfg.notify_saved !== false
+                            onToggled: ObscuraStore.setConfig("notify_saved", !(ObscuraStore.cfg.notify_saved !== false))
+                        }
+                        Text {
+                            anchors.verticalCenter: parent.verticalCenter
+                            text: "Bildirim göster"
+                            color: root.pal.text
+                            font.family: root.uiFont
+                            font.pixelSize: 13 * root.u
+                        }
+                    }
+                    Row {
+                        height: 34 * root.u
+                        spacing: 12 * root.u
+                        ObscuraSwitch {
+                            anchors.verticalCenter: parent.verticalCenter
+                            pal: root.pal
+                            u: root.u
+                            on: ObscuraStore.cfg.copy_path === true
+                            onToggled: ObscuraStore.setConfig("copy_path", !(ObscuraStore.cfg.copy_path === true))
+                        }
+                        Text {
+                            anchors.verticalCenter: parent.verticalCenter
+                            text: "Dosya yolunu panoya kopyala"
+                            color: root.pal.text
+                            font.family: root.uiFont
+                            font.pixelSize: 13 * root.u
                         }
                     }
                 }

@@ -30,6 +30,10 @@ Bind it in Hyprland:
 bind = SUPER ALT, R, exec, obscura toggle
 ```
 
+## Hooks
+
+When a recording is saved obscura shows a notification and can copy the path to the clipboard (both switchable in the panel). Any executable in `~/.config/obscura/hooks/saved.d/` also runs, with the file path as `$1` and in `OBSCURA_PATH`.
+
 ## Screen-share picker
 
 OBS asks for the screen through the desktop portal each time it starts, and the stock dialog does not match the rest of the desktop. obscura ships a picker for xdg-desktop-portal-hyprland that is drawn by the Quickshell widget (screens, windows, "remember this choice"). If the widget is not running, the stock dialog appears, so sharing never depends on obscura.
@@ -48,7 +52,7 @@ Note: xdph does not say who is asking, so every app's share request (browser, Di
 - [x] M1: `obscura watch` and the bar pill (live OBS test pending)
 - [x] M2: panel (scene, audio sources, replay buffer, recording settings, widget look)
 - [x] M3: screen-share picker
-- [ ] M4: shortcut, hooks, level meters
+- [x] M4: shortcut, hooks, level meters
 
 ## License
 

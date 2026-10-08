@@ -116,6 +116,28 @@ Singleton {
         act(["shot"]);
     }
 
+    // Audio levels (0..1 per input), streamed only while the panel shows them.
+    property var levels: ({})
+    property bool wantMeters: false
+    onWantMetersChanged: if (!wantMeters)
+        levels = ({})
+
+    Process {
+        id: meterProc
+        command: root.command(["meters"])
+        running: root.wantMeters
+        stdout: SplitParser {
+            onRead: line => {
+                if (!line)
+                    return;
+                try {
+                    root.levels = JSON.parse(line);
+                } catch (e) {
+                }
+            }
+        }
+    }
+
     // ---- widget settings -------------------------------------------------------
     property var cfg: ({})
     readonly property string timerFont: cfg.timer_font || "Space Mono"

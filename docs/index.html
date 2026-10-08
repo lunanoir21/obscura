@@ -1,0 +1,255 @@
+<!doctype html>
+<html lang="en" data-theme="dark">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>obscura — OBS recording for Quickshell</title>
+<meta name="description" content="A thin control layer for OBS Studio on Hyprland: a quiet button in your bar that grows into a pill while you record, a panel for the details, and a shortcut that works from anywhere.">
+<link rel="icon" href="favicon.svg" type="image/svg+xml">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Instrument+Sans:wght@400;500;600&family=JetBrains+Mono:wght@400;500&family=Space+Mono&family=Doto:wght@700;900&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="site.css">
+</head>
+<body>
+
+<header class="nav">
+  <a class="brand" href="#top" aria-label="obscura">
+    <svg width="22" height="22" viewBox="0 0 22 22" aria-hidden="true"><circle cx="11" cy="11" r="8" fill="none" stroke="currentColor" stroke-width="1.6"/><circle cx="11" cy="11" r="3" class="dot"/></svg>
+    <span>obscura</span>
+  </a>
+  <nav aria-label="Sections">
+    <a href="#how" data-i18n="nav.how">How it works</a>
+    <a href="#panel" data-i18n="nav.panel">Panel</a>
+    <a href="#picker" data-i18n="nav.picker">Picker</a>
+    <a href="#install" data-i18n="nav.install">Install</a>
+  </nav>
+  <div class="tools">
+    <button class="chip" id="lang" type="button" aria-label="Language">TR</button>
+    <button class="chip" id="theme" type="button" aria-label="Theme">◐</button>
+    <a class="chip strong" href="https://github.com/lunanoir21/obscura">GitHub</a>
+  </div>
+</header>
+
+<main id="top">
+
+<!-- ───────── hero ───────── -->
+<section class="hero">
+  <svg class="obscura-ring" viewBox="0 0 600 600" aria-hidden="true">
+    <circle cx="300" cy="300" r="290" fill="none" stroke="currentColor" stroke-width="1"/>
+    <circle cx="300" cy="300" r="214" fill="none" stroke="currentColor" stroke-width="1"/>
+    <circle cx="300" cy="300" r="12" class="dot"/>
+  </svg>
+  <p class="eyebrow" data-i18n="hero.eyebrow">for OBS Studio · Quickshell · Hyprland</p>
+  <h1><span data-i18n="hero.h1a">Recording is</span><br><em data-i18n="hero.h1b">one quiet button.</em></h1>
+  <p class="lede" data-i18n="hero.lede">A small circle in your bar that opens into a pill while you record, a panel for the details, and a shortcut that works from anywhere. OBS keeps doing the recording; obscura only holds the remote.</p>
+  <div class="cta">
+    <div class="cmd" id="cmd"><code>git clone https://github.com/lunanoir21/obscura</code><button type="button" id="copy" aria-label="Copy">Copy</button></div>
+    <a class="link" href="#install" data-i18n="hero.more">Install steps →</a>
+  </div>
+
+  <div class="stage" aria-label="Interactive demo of the bar pill">
+    <div class="bar">
+      <div class="pill-slot"><div class="opill" id="opill" data-mode="idle">
+        <div class="layer l-idle"><span class="ring"><i></i></span></div>
+        <div class="layer l-rec"><span class="rdot"></span><span class="clock" id="clock">00:00</span><span class="stop"><i></i></span></div>
+        <div class="layer l-pause"><span class="pbars"><i></i><i></i></span><span class="clock dim" id="clock2">00:00</span><span class="stop"><i></i></span></div>
+        <div class="layer l-saved"><span class="tick">✓</span><span data-i18n="demo.saved">Saved</span></div>
+      </div></div>
+      <div class="ghostpill"><svg width="16" height="16" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6"><rect x="2" y="5" width="11" height="10" rx="2"/><path d="M13 9l5-3v8l-5-3"/></svg>Meet<b>2</b></div>
+      <div class="ghostpill round"><i class="spot"></i></div>
+      <div class="ghostpill"><svg width="16" height="16" viewBox="0 0 20 20" fill="none" stroke="#e5bc8d" stroke-width="1.6"><path d="M2 11h4l2-6 3 10 2-4h5"/></svg>1h 07m</div>
+    </div>
+    <div class="steps" role="group" aria-label="Demo state">
+      <button type="button" data-set="idle" class="on" data-i18n="demo.idle">Idle</button>
+      <button type="button" data-set="rec" data-i18n="demo.rec">Recording</button>
+      <button type="button" data-set="pause" data-i18n="demo.pause">Paused</button>
+      <button type="button" data-set="saved" data-i18n="demo.savedBtn">Saved</button>
+      <button type="button" id="auto" class="auto on" data-i18n="demo.auto">Auto</button>
+    </div>
+  </div>
+</section>
+
+<!-- ───────── principles ───────── -->
+<section class="band">
+  <div class="facts">
+    <div><b>0%</b><span data-i18n="f.cpu">CPU while idle. No polling loop; the client sleeps on the socket.</span></div>
+    <div><b>1.2 MB</b><span data-i18n="f.size">release binary. Written in Rust, one process, no runtime.</span></div>
+    <div><b>3 MB</b><span data-i18n="f.ram">resident memory for the process that watches OBS.</span></div>
+    <div><b>0</b><span data-i18n="f.cfg">config files needed. Port and password come from OBS itself.</span></div>
+  </div>
+</section>
+
+<!-- ───────── how ───────── -->
+<section id="how" class="sec">
+  <p class="label" data-i18n="how.label">How it works</p>
+  <h2 data-i18n="how.h">A remote, not another recorder.</h2>
+  <div class="trio">
+    <article>
+      <span class="n">01</span>
+      <h3 data-i18n="how.1h">OBS does the work</h3>
+      <p data-i18n="how.1p">obscura drives the OBS you already have through its built-in WebSocket server. Your scenes, sources and encoder settings stay in OBS; nothing is re-implemented.</p>
+    </article>
+    <article>
+      <span class="n">02</span>
+      <h3 data-i18n="how.2h">One thin layer</h3>
+      <p data-i18n="how.2p">A small Rust binary watches OBS and prints state as JSON lines. The Quickshell module reads them and draws the pill. If one dies, the other is unaffected.</p>
+    </article>
+    <article>
+      <span class="n">03</span>
+      <h3 data-i18n="how.3h">Never guesses</h3>
+      <p data-i18n="how.3p">The red dot lights only when OBS says the recording started. If OBS is closed, the server is off or the password is wrong, the pill says so instead of pretending.</p>
+    </article>
+  </div>
+</section>
+
+<!-- ───────── panel ───────── -->
+<section id="panel" class="sec">
+  <p class="label" data-i18n="panel.label">The panel</p>
+  <h2 data-i18n="panel.h">Everything you reach for, nothing else.</h2>
+  <div class="panel-wrap">
+    <div class="panel-copy">
+      <ul class="ticks">
+        <li data-i18n="panel.l1">Start, pause and stop; switch scenes; mute sources with live level bars.</li>
+        <li data-i18n="panel.l2">Pick the recording folder by browsing, set the file name pattern, and see the next file's name. A warning appears if that name is already taken.</li>
+        <li data-i18n="panel.l3">Frame rate options follow your screen: a 144 Hz display offers 120 and 144, a 60 Hz one does not offer 120.</li>
+        <li data-i18n="panel.l4">Resolution, container and replay-buffer length change in OBS on the spot. While recording, the ones OBS refuses to change are locked.</li>
+        <li data-i18n="panel.l5">Timer font and size, button shape, notifications and the OBS port are yours to set.</li>
+      </ul>
+    </div>
+    <div class="panel-stage">
+      <div class="opanel" id="opanel">
+        <div class="tabs" role="tablist">
+          <button role="tab" class="on" data-tab="0" data-i18n="tab.control">Kontrol</button>
+          <button role="tab" data-tab="1" data-i18n="tab.record">Kayıt</button>
+          <button role="tab" data-tab="2" data-i18n="tab.look">Görünüm</button>
+          <span class="conn">OBS · bağlı</span>
+        </div>
+
+        <div class="tabpane on" data-pane="0">
+          <div class="state"><i class="d"></i><b>Hazır</b></div>
+          <div class="bigtime"><span id="pt">00:00</span><small>1080p · 60 fps</small></div>
+          <div class="btn primary">Kaydı başlat</div>
+          <div class="cap">Sahne</div>
+          <div class="chips"><span class="on">Sahne</span><span>Oyun</span><span>Kamera</span></div>
+          <div class="cap">Ses kaynakları</div>
+          <div class="src"><i class="sw on"></i><span>Masaüstü Ses</span><em class="lvl"><u style="width:62%"></u></em></div>
+          <div class="src"><i class="sw on"></i><span>Mic/Aux</span><em class="lvl"><u style="width:24%"></u></em></div>
+          <div class="row3"><div class="btn wide">Son 30 sn'yi kaydet</div><div class="btn">Ekran</div><div class="btn">Klasör</div></div>
+        </div>
+
+        <div class="tabpane" data-pane="1">
+          <div class="cap">Kayıt klasörü</div>
+          <div class="frow"><div class="field mono">/home/luna/Videos/obscura</div><div class="btn sm">Seç</div></div>
+          <div class="cap">Dosya adı</div>
+          <div class="field mono">%CCYY-%MM-%DD %hh-%mm-%ss</div>
+          <div class="hint mono">Sonraki dosya: 2026-10-09 22-20-14.mkv</div>
+          <div class="hint warn">Bu adla bir dosya zaten var; OBS yenisinin sonuna (1) ekleyerek kaydeder.</div>
+          <div class="cap">Kare hızı</div>
+          <div class="seg"><span>24</span><span>30</span><span class="on">60</span><span>120</span><span>144</span></div>
+          <div class="cap">Çözünürlük</div>
+          <div class="seg"><span>720p</span><span class="on">1080p</span><span>1440p</span><span>Yerel</span></div>
+          <div class="cap">Biçim</div>
+          <div class="seg"><span class="on">MKV</span><span>MP4</span><span>MOV</span></div>
+        </div>
+
+        <div class="tabpane" data-pane="2">
+          <div class="cap">Süre yazısı</div>
+          <div class="seg big"><span class="on" style="font-family:'Space Mono',monospace">04:12</span><span style="font-family:'Doto',monospace;font-weight:900;font-size:21px">04:12</span></div>
+          <div class="cap">Yazı boyutu</div>
+          <div class="frow"><div class="btn sm sq">−</div><div class="mid mono">18 px</div><div class="btn sm sq">+</div></div>
+          <div class="cap">Kayıt bitince</div>
+          <div class="src"><i class="sw on"></i><span>Bildirim göster</span></div>
+          <div class="src"><i class="sw"></i><span>Dosya yolunu panoya kopyala</span></div>
+          <div class="cap">Düğme biçimi</div>
+          <div class="seg"><span class="on">Daire</span><span>Hap</span><span>Yalnız simge</span></div>
+        </div>
+      </div>
+      <p class="note" data-i18n="panel.note">The panel is drawn in Turkish; the labels follow your system language in a later version.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ───────── features ───────── -->
+<section class="sec">
+  <p class="label" data-i18n="feat.label">Details</p>
+  <h2 data-i18n="feat.h">Small things, done carefully.</h2>
+  <div class="grid">
+    <article><h3 data-i18n="feat.1h">Shortcut anywhere</h3><p data-i18n="feat.1p"><code>obscura toggle</code> works with the bar closed. If OBS is closed too, it opens it in the background and starts recording.</p></article>
+    <article><h3 data-i18n="feat.2h">Open on click</h3><p data-i18n="feat.2p">Click the pill while OBS is closed and it starts minimised to the tray. A second copy is never launched.</p></article>
+    <article><h3 data-i18n="feat.3h">After the recording</h3><p data-i18n="feat.3p">A notification, optionally the path on the clipboard, and any executable you drop in <code>~/.config/obscura/hooks/saved.d/</code>.</p></article>
+    <article><h3 data-i18n="feat.4h">Level meters</h3><p data-i18n="feat.4p">OBS sends about 50 level events a second. obscura thins them to a dozen and only while the panel is open.</p></article>
+    <article><h3 data-i18n="feat.5h">Kind to the bar</h3><p data-i18n="feat.5p">Blink instead of a constant fade, a window that never resizes mid-animation, and a panel that exists only while it is open.</p></article>
+    <article><h3 data-i18n="feat.6h">Your own font</h3><p data-i18n="feat.6p">The timer can be Space Mono or the dot-matrix Doto, at any size from 10 to 32 px.</p></article>
+  </div>
+</section>
+
+<!-- ───────── picker ───────── -->
+<section id="picker" class="sec">
+  <p class="label" data-i18n="pick.label">Screen-share picker</p>
+  <h2 data-i18n="pick.h">The dialog OBS asks for, in your style.</h2>
+  <div class="pick-wrap">
+    <div class="pick-copy">
+      <p data-i18n="pick.p1">On Wayland, OBS asks the desktop portal which screen or window to capture, and the stock dialog does not look like anything else on your desktop. obscura can answer that question itself, with a card drawn by your Quickshell setup.</p>
+      <p data-i18n="pick.p2">It is optional and safe: if the widget is not running, the stock dialog appears. One caveat: the portal does not say who is asking, so every app's share request, browser and Discord included, uses this card.</p>
+      <pre class="code"><code>obscura picker-setup install
+systemctl --user restart xdg-desktop-portal-hyprland
+# back to the stock dialog:
+obscura picker-setup uninstall</code></pre>
+    </div>
+    <div class="pick-card" aria-hidden="true">
+      <h4>Ne paylaşılsın?</h4>
+      <p>Bir uygulama ekranını görmek istiyor. Birini seç.</p>
+      <div class="seg"><span class="on">Ekranlar</span><span>Pencereler (6)</span></div>
+      <div class="scr"><i class="mon"></i><div><b>Tüm ekran · eDP-1</b><small>1920 × 1080</small></div></div>
+      <div class="foot"><i class="sw"></i><span>Bu seçimi hatırla (bir daha sorma)</span><div class="btn sm">İptal</div></div>
+    </div>
+  </div>
+</section>
+
+<!-- ───────── install ───────── -->
+<section id="install" class="sec">
+  <p class="label" data-i18n="inst.label">Install</p>
+  <h2 data-i18n="inst.h">From source, five minutes.</h2>
+  <ol class="install">
+    <li>
+      <h3 data-i18n="inst.1h">Turn on OBS's WebSocket server</h3>
+      <p data-i18n="inst.1p">In OBS: Tools → WebSocket Server Settings → Enable. Needs OBS 28 or newer.</p>
+    </li>
+    <li>
+      <h3 data-i18n="inst.2h">Build</h3>
+<pre class="code"><code>git clone https://github.com/lunanoir21/obscura
+cd obscura && cargo build --release
+ln -s "$PWD/target/release/obscura" ~/.local/bin/obscura
+obscura doctor</code></pre>
+    </li>
+    <li>
+      <h3 data-i18n="inst.3h">Add it to your bar</h3>
+      <p data-i18n="inst.3p">Place the module in your Quickshell config and drop the pill where you want it. <code>pal</code> is your colour object, <code>u</code> your scale unit.</p>
+<pre class="code"><code>import "vendor/obscura/ui" as Obscura
+
+Obscura.ObscuraPill { pal: mocha; u: barWindow.s(1) }
+// once, anywhere in the shell:
+Obscura.ObscuraPickerHost {}</code></pre>
+    </li>
+    <li>
+      <h3 data-i18n="inst.4h">Bind a key</h3>
+<pre class="code"><code>bind = SUPER ALT, R, exec, obscura toggle
+bind = SUPER ALT SHIFT, R, exec, obscura pause</code></pre>
+    </li>
+  </ol>
+  <p class="note" data-i18n="inst.note">Built and tested on Hyprland with OBS Studio 32 and Quickshell 0.3. Other setups are untested.</p>
+</section>
+
+</main>
+
+<footer class="foot-bar">
+  <div>
+    <b>obscura</b> <span data-i18n="foot.tag">— the camera obscura: the dark chamber light passes through to make an image.</span>
+  </div>
+  <div class="links"><a href="https://github.com/lunanoir21/obscura">GitHub</a><span>MIT</span></div>
+</footer>
+
+<script src="site.js"></script>
+</body>
+</html>

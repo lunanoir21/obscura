@@ -28,6 +28,8 @@ obscura drives the OBS you already have through its built-in WebSocket server (o
 
 ## Install
 
+<p align="center"><a href="docs/video/obscura-install-en.mp4"><img src="docs/video/poster-en.jpg" width="780" alt="Install video: OBS WebSocket server, build, bar, shortcut"></a><br><sub>▶ Watch the whole install (68 s, no sound)</sub></p>
+
 <p align="center"><img src="docs/assets/install.svg" width="780" alt="Animated terminal: git clone, cargo build, obscura doctor, obscura toggle"></p>
 
 From source (Rust 1.85 or newer):

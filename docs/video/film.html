@@ -1,0 +1,451 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>obscura install film</title>
+<style>
+*{box-sizing:border-box;margin:0}
+html,body{width:1280px;height:720px;overflow:hidden;background:#0b0b0b}
+body{font:400 16px 'Instrument Sans',system-ui,sans-serif;color:#ededed}
+#stage{position:relative;width:1280px;height:720px;background:#0b0b0b;overflow:hidden}
+.scene{position:absolute;inset:0;opacity:0;visibility:hidden}
+.mono{font-family:'JetBrains Mono',ui-monospace,monospace}
+.serif{font-family:'Instrument Serif',Georgia,serif}
+
+/* caption */
+#cap{position:absolute;left:50%;bottom:34px;transform:translateX(-50%);display:flex;flex-direction:column;align-items:center;gap:10px;z-index:50;width:1000px}
+#cap .main{background:#ededed;color:#0b0b0b;font:600 21px 'Instrument Sans',sans-serif;padding:11px 24px;border-radius:999px;letter-spacing:-.005em;white-space:nowrap}
+#cap .sub{font:500 16px 'Instrument Sans',sans-serif;color:#a3a3a3;background:rgba(11,11,11,.82);padding:6px 16px;border-radius:999px;min-height:30px;white-space:nowrap}
+
+/* window chrome */
+.win{position:absolute;background:#141416;border:1px solid #2a2a2c;border-radius:14px;overflow:hidden;box-shadow:0 30px 80px rgba(0,0,0,.55)}
+.bar{height:38px;background:#1b1b1d;border-bottom:1px solid #2a2a2c;display:flex;align-items:center;padding:0 14px;color:#8c8c8c;font:500 13px 'Instrument Sans',sans-serif;gap:10px}
+
+/* title + end */
+.center{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:22px;text-align:center}
+.center h1{font:italic 400 84px/1 'Instrument Serif',serif;letter-spacing:-.02em}
+.center p{font:400 22px 'Instrument Sans',sans-serif;color:#a3a3a3}
+.center code{font:500 20px 'JetBrains Mono',monospace;color:#ededed;background:#141416;border:1px solid #2a2a2c;border-radius:12px;padding:10px 18px}
+
+/* OBS mock */
+#obs{left:130px;top:46px;width:1020px;height:570px}
+#obsbody{position:absolute;top:38px;left:0;right:0;bottom:0}
+.menubar{height:32px;display:flex;align-items:center;gap:4px;padding:0 8px;background:#18181a;border-bottom:1px solid #2a2a2c;font:500 14px 'Instrument Sans',sans-serif;color:#cfcfcf}
+.menubar span{padding:5px 11px;border-radius:6px}
+.menubar span.hot{background:#2c2c2f;color:#fff}
+.preview{position:absolute;left:14px;right:14px;top:44px;height:290px;background:#000;border:1px solid #2a2a2c;border-radius:8px;display:grid;place-items:center;color:#3a3a3d;font:500 14px 'JetBrains Mono',monospace}
+.docks{position:absolute;left:14px;right:14px;top:346px;bottom:14px;display:grid;grid-template-columns:repeat(4,1fr);gap:10px}
+.dock{background:#18181a;border:1px solid #2a2a2c;border-radius:8px;padding:10px 12px;color:#8c8c8c;font:600 11px 'JetBrains Mono',monospace;letter-spacing:.12em;text-transform:uppercase}
+.dd{position:absolute;background:#1d1d20;border:1px solid #333337;border-radius:8px;padding:6px;font:500 14px 'Instrument Sans',sans-serif;color:#cfcfcf;box-shadow:0 14px 40px rgba(0,0,0,.5);width:270px}
+.dd div{padding:7px 12px;border-radius:5px;white-space:nowrap}
+.dd div.hot{background:#2e5ec0;color:#fff}
+#dlg{position:absolute;left:280px;top:80px;width:470px;background:#1b1b1e;border:1px solid #38383c;border-radius:12px;box-shadow:0 30px 90px rgba(0,0,0,.65);overflow:hidden;color:#d6d6d6;font:400 14px 'Instrument Sans',sans-serif}
+#dlg .t{padding:12px 18px;border-bottom:1px solid #2c2c30;font-weight:600;color:#fff}
+#dlg .b{padding:20px 22px 12px;display:flex;flex-direction:column;gap:16px}
+.chk{display:flex;align-items:center;gap:12px}
+.box{width:18px;height:18px;border-radius:4px;border:1.6px solid #6a6a70;display:grid;place-items:center;font-size:13px;color:#fff;line-height:1}
+.box.on{background:#2e5ec0;border-color:#2e5ec0}
+.fld{display:flex;align-items:center;gap:12px}
+.fld label{width:130px;color:#9a9a9f}
+.in{flex:1;height:32px;border-radius:6px;background:#0f0f11;border:1px solid #38383c;display:flex;align-items:center;padding:0 10px;font:13px 'JetBrains Mono',monospace;color:#ededed}
+.btns{display:flex;justify-content:flex-end;gap:8px;padding:6px 22px 18px}
+.btn{padding:8px 20px;border-radius:7px;background:#2a2a2e;color:#e6e6e6;font-weight:500}
+.btn.ok{background:#2e5ec0;color:#fff}
+.btn.hot{outline:2px solid rgba(255,255,255,.35)}
+
+/* terminal */
+#term{left:190px;top:70px;width:900px;height:520px}
+#term .ln{position:absolute;left:28px;white-space:pre;font:15px 'JetBrains Mono',monospace;color:#a3a3a3}
+.cur{display:inline-block;width:9px;height:18px;background:#ededed;vertical-align:-3px}
+
+/* editor */
+.ed{left:130px;top:56px;width:1020px;height:560px}
+.tabs{display:flex;gap:0;background:#1b1b1d;height:38px;border-bottom:1px solid #2a2a2c;align-items:flex-end}
+.tab{padding:0 20px;height:38px;display:flex;align-items:center;gap:8px;font:500 13px 'JetBrains Mono',monospace;color:#6e6e6e;border-right:1px solid #2a2a2c}
+.tab.on{background:#141416;color:#ededed}
+.sv{font-size:11px;color:#9dd6a4;margin-left:6px}
+.code{position:absolute;top:50px;left:0;right:0;bottom:0;font:15px/27px 'JetBrains Mono',monospace;color:#cfcfcf}
+.cl{position:absolute;left:0;right:0;height:27px;white-space:pre;padding-left:74px}
+.cl i{position:absolute;left:0;width:52px;text-align:right;color:#4a4a4e;font-style:normal}
+.cl.add{background:rgba(157,214,164,.09)}
+.cl .k{color:#a8a8a8}.cl .s{color:#e5bc8d}.cl .c{color:#6e6e6e}.cl .n{color:#d9bcd6}
+.toast{position:absolute;right:26px;top:56px;background:#1d1d20;border:1px solid #38383c;border-radius:12px;padding:12px 18px;font:500 14px 'Instrument Sans',sans-serif;color:#ededed;display:flex;gap:10px;align-items:center}
+.toast i{width:9px;height:9px;border-radius:50%;background:#9dd6a4;display:block}
+
+/* result */
+#sE{background:#a9ada1}
+.barstrip{position:absolute;left:50%;top:150px;transform:translateX(-50%) scale(1.5);transform-origin:center top;display:flex;gap:8px;align-items:center}
+.gp{height:48px;border-radius:14px;background:rgba(14,14,14,.75);border:1px solid rgba(234,234,234,.08);display:flex;align-items:center;gap:8px;padding:0 14px;color:#eaeaea;font:600 14px 'Instrument Sans',sans-serif;opacity:.6}
+.gp.r{width:48px;padding:0;justify-content:center}
+.gp b{background:#262626;border-radius:9px;padding:1px 7px;font-size:11px;font-weight:500}
+.op{position:relative;height:48px;border-radius:14px;overflow:hidden;background:rgba(14,14,14,.75);border:1px solid rgba(234,234,234,.08);color:#eaeaea}
+.op .lay{position:absolute;inset:0;display:flex;align-items:center;gap:10px;padding-left:14px;white-space:nowrap;font:600 14px 'Instrument Sans',sans-serif}
+.ring{width:18px;height:18px;border-radius:50%;border:1.6px solid #8c8c8c;display:grid;place-items:center}
+.ring i{width:6px;height:6px;border-radius:50%;background:#8c8c8c}
+.rd{width:9px;height:9px;border-radius:50%;background:#f08a82;flex:none}
+.clk{font:400 18px 'Space Mono','JetBrains Mono',monospace;min-width:52px}
+.stop{margin-left:auto;margin-right:8px;width:30px;height:30px;border-radius:9px;background:#262626;display:grid;place-items:center}
+.stop i{width:10px;height:10px;border-radius:2px;background:#eaeaea}
+.keys{position:absolute;left:50%;top:360px;transform:translateX(-50%);display:flex;gap:14px;align-items:center}
+.key{min-width:92px;height:76px;border-radius:16px;background:#ededed;color:#0b0b0b;border-bottom:7px solid #b9b9b9;display:grid;place-items:center;font:600 24px 'Instrument Sans',sans-serif;padding:0 18px}
+.plus{font:600 26px 'Instrument Sans';color:#3b3d37}
+.saved{color:#9dd6a4;font-weight:700}
+
+/* cursor */
+#cursor{position:absolute;left:0;top:0;z-index:60;width:26px;height:26px;opacity:0;will-change:transform}
+#ripple{position:absolute;z-index:59;width:44px;height:44px;border-radius:50%;border:3px solid rgba(255,255,255,.75);opacity:0;left:0;top:0}
+</style>
+</head>
+<body>
+<div id="stage">
+
+<!-- 0 title -->
+<div id="s0" class="scene center">
+  <svg width="120" height="120" viewBox="0 0 100 100" fill="none"><circle cx="50" cy="50" r="38" stroke="#ededed" stroke-width="5"/><polygon points="50,34 63.9,42 63.9,58 50,66 36.1,58 36.1,42" stroke="#ededed" stroke-width="5" stroke-linejoin="round"/><path d="M50 12v22M83 31l-19 11M83 69 64 58M50 88V66M17 69l19-11M17 31l19 11" stroke="#ededed" stroke-width="3.5" stroke-linecap="round" opacity=".6"/><circle cx="50" cy="50" r="5" fill="#f08a82"/></svg>
+  <h1 id="t0a">Install obscura</h1>
+  <p id="t0b">Five steps, about five minutes.</p>
+</div>
+
+<!-- A OBS -->
+<div id="sA" class="scene">
+  <div id="obs" class="win">
+    <div class="bar"><span style="width:12px;height:12px;border-radius:50%;background:#333;display:block"></span> OBS Studio</div>
+    <div id="obsbody">
+      <div class="menubar" id="mb"><span>File</span><span>Edit</span><span>View</span><span>Docks</span><span>Profile</span><span>Scene Collection</span><span id="mTools">Tools</span><span>Help</span></div>
+      <div class="preview">preview</div>
+      <div class="docks"><div class="dock">Scenes</div><div class="dock">Sources</div><div class="dock">Audio Mixer</div><div class="dock">Controls</div></div>
+      <div class="dd" id="dd" style="display:none">
+        <div>Auto Scene Switcher</div><div>Output Timer</div><div>Scripts</div><div id="ddWs">WebSocket Server Settings</div>
+      </div>
+      <div id="dlg" style="display:none">
+        <div class="t">WebSocket Server Settings</div>
+        <div class="b">
+          <div class="chk"><div class="box" id="chkEnable"></div><span>Enable WebSocket server</span></div>
+          <div class="fld"><label>Server Port</label><div class="in">4455</div></div>
+          <div class="chk"><div class="box on">✓</div><span>Enable Authentication</span></div>
+          <div class="fld"><label>Server Password</label><div class="in">••••••••••••</div></div>
+        </div>
+        <div class="btns"><div class="btn">Cancel</div><div class="btn ok" id="dlgOk">OK</div></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- B terminal -->
+<div id="sB" class="scene">
+  <div id="term" class="win"><div class="bar"><span class="mono" style="font-size:12px">~/projects</span></div><div id="tlines"></div></div>
+</div>
+
+<!-- C editor: quickshell -->
+<div id="sC" class="scene">
+  <div class="win ed">
+    <div class="tabs"><div class="tab on" id="tabTop">TopBar.qml<span class="sv" id="svTop"></span></div><div class="tab" id="tabShell">Shell.qml<span class="sv" id="svShell"></span></div></div>
+    <div class="code" id="codeC"></div>
+  </div>
+</div>
+
+<!-- D editor: hyprland -->
+<div id="sD" class="scene">
+  <div class="win ed">
+    <div class="tabs"><div class="tab on">hyprland.conf<span class="sv" id="svHypr"></span></div></div>
+    <div class="code" id="codeD"></div>
+    <div class="toast" id="toastD" style="opacity:0"><i></i>Hyprland reloaded your config</div>
+  </div>
+</div>
+
+<!-- E result -->
+<div id="sE" class="scene">
+  <div class="barstrip">
+    <div class="op" id="op" style="width:48px">
+      <div class="lay" id="lIdle" style="justify-content:center;padding-left:0"><span class="ring"><i></i></span></div>
+      <div class="lay" id="lRec" style="opacity:0"><span class="rd" id="rdot"></span><span class="clk" id="clk">00:00</span><span class="stop"><i></i></span></div>
+      <div class="lay" id="lSaved" style="opacity:0"><span class="saved">✓</span><span id="savedTxt">Saved</span></div>
+    </div>
+    <div class="gp">Meet<b>2</b></div><div class="gp r"><i style="width:16px;height:16px;border-radius:50%;background:#9dd6a4;display:block"></i></div>
+  </div>
+  <div class="keys" id="keys"><div class="key" id="k1">Super</div><span class="plus">+</span><div class="key" id="k2">Alt</div><span class="plus">+</span><div class="key" id="k3">R</div></div>
+</div>
+
+<!-- Z end -->
+<div id="sZ" class="scene center">
+  <svg width="96" height="96" viewBox="0 0 100 100" fill="none"><circle cx="50" cy="50" r="38" stroke="#ededed" stroke-width="5"/><polygon points="50,34 63.9,42 63.9,58 50,66 36.1,58 36.1,42" stroke="#ededed" stroke-width="5" stroke-linejoin="round"/><path d="M50 12v22M83 31l-19 11M83 69 64 58M50 88V66M17 69l19-11M17 31l19 11" stroke="#ededed" stroke-width="3.5" stroke-linecap="round" opacity=".6"/><circle cx="50" cy="50" r="5" fill="#f08a82"/></svg>
+  <h1 id="tZa">That's it.</h1>
+  <p id="tZb">The pill is in your bar. OBS does the rest.</p>
+  <code>github.com/lunanoir21/obscura</code>
+</div>
+
+<div id="cap"><div class="main" id="capMain"></div><div class="sub" id="capSub"></div></div>
+<div id="ripple"></div>
+<svg id="cursor" viewBox="0 0 26 26"><path d="M4 2l17 10-7.5 1.8L9.6 21z" fill="#fff" stroke="#000" stroke-width="1.4" stroke-linejoin="round"/></svg>
+</div>
+
+<script>
+const LANG = new URLSearchParams(location.search).get('lang') === 'tr' ? 'tr' : 'en';
+const L = {
+  en: {
+    t0a:'Install obscura', t0b:'Five steps, about five minutes.',
+    c1:'1 · Turn on OBS’s WebSocket server', c2:'2 · Build it and check the connection',
+    c3:'3 · Put the pill in your bar', c4:'4 · Bind a key', c5:'5 · Record from anywhere',
+    a1:'OBS → Tools → WebSocket Server Settings', a2:'Switch it on. obscura reads the port and password from here.', a3:'Nothing to copy. Press OK.',
+    b1:'Clone and build with cargo', b2:'Put it on your PATH', b3:'doctor: “connection ok” means obscura can reach OBS',
+    cc1:'Your Quickshell config: import the module, add the pill', cc2:'Once in Shell.qml, for the screen-share picker (optional)',
+    d1:'Your Hyprland config (hyprland.conf)', d2:'Saved. Hyprland picks it up on its own.',
+    e1:'Press the shortcut: the pill opens and the dot lights', e2:'Press it again: saved. Works with the bar hidden too.',
+    saved:'Saved', tz1:'That’s it.', tz2:'The pill is in your bar. OBS does the rest.', ok:'Saved'
+  },
+  tr: {
+    t0a:'obscura kurulumu', t0b:'Beş adım, yaklaşık beş dakika.',
+    c1:'1 · OBS’in WebSocket sunucusunu aç', c2:'2 · Derle ve bağlantıyı denetle',
+    c3:'3 · Hapı çubuğuna yerleştir', c4:'4 · Bir tuşa bağla', c5:'5 · Her yerden kaydet',
+    a1:'OBS → Tools → WebSocket Server Settings', a2:'Aç. obscura port ve parolayı buradan okur.', a3:'Kopyalanacak bir şey yok. OK’e bas.',
+    b1:'cargo ile klonla ve derle', b2:'PATH’ine koy', b3:'doctor: “connection ok”, obscura’nın OBS’e ulaştığı demek',
+    cc1:'Quickshell yapılandırman: modülü içe aktar, hapı ekle', cc2:'Shell.qml’de bir kez, ekran paylaşımı seçici için (isteğe bağlı)',
+    d1:'Hyprland yapılandırman (hyprland.conf)', d2:'Kaydedildi. Hyprland kendiliğinden yükler.',
+    e1:'Kısayola bas: hap açılır, nokta yanar', e2:'Tekrar bas: kaydedildi. Çubuk gizliyken de çalışır.',
+    saved:'Kaydedildi', tz1:'Hepsi bu.', tz2:'Hap çubuğunda. Gerisini OBS yapar.', ok:'Kaydedildi'
+  }
+}[LANG];
+document.documentElement.lang = LANG;
+
+const $ = s => document.querySelector(s);
+const clamp = (x, a = 0, b = 1) => Math.min(b, Math.max(a, x));
+const ease = x => (x = clamp(x), x * x * (3 - 2 * x));
+const lerp = (a, b, k) => a + (b - a) * k;
+const typed = (s, lt, t0, cps) => s.slice(0, Math.max(0, Math.min(s.length, Math.floor((lt - t0) * cps))));
+const twoD = n => String(n).padStart(2, '0');
+const fmt = s => twoD(Math.floor(s / 60)) + ':' + twoD(Math.floor(s) % 60);
+
+/* ---- timeline ---- */
+const SC = [
+  ['s0', 0, 3.6], ['sA', 3.6, 17.2], ['sB', 17.2, 31.4], ['sC', 31.4, 44.6], ['sD', 44.6, 53.4], ['sE', 53.4, 63.2], ['sZ', 63.2, 68]
+];
+const DUR = SC[SC.length - 1][2];
+
+/* captions: [from, to, main, sub] by global time */
+const CAPS = [
+  [3.6, 17.2, L.c1, null], [17.2, 31.4, L.c2, null], [31.4, 44.6, L.c3, null], [44.6, 53.4, L.c4, null], [53.4, 63.2, L.c5, null]
+];
+const SUBS = [
+  [4.0, 8.2, L.a1], [8.4, 13.4, L.a2], [13.8, 17.0, L.a3],
+  [17.8, 23.6, L.b1], [23.6, 26.6, L.b2], [27.2, 31.2, L.b3],
+  [32.0, 38.4, L.cc1], [39.0, 44.4, L.cc2],
+  [45.0, 49.6, L.d1], [50.4, 53.2, L.d2],
+  [54.2, 58.4, L.e1], [58.6, 63.0, L.e2]
+];
+
+/* ---- cursor ---- */
+function center(sel) { const r = $(sel).getBoundingClientRect(); return [r.left + r.width / 2, r.top + r.height / 2]; }
+let WP = null;
+function buildPath() {
+  // [time, x, y, click?]; computed once from the real layout. The menu and the
+  // dialog are hidden until their moment, so show them while measuring.
+  const sA = $('#sA'), dd = $('#dd'), dlg = $('#dlg'), keep = [sA.style.visibility, dd.style.display, dlg.style.display];
+  sA.style.visibility = 'visible'; dd.style.display = 'block'; dlg.style.display = 'block';
+  dd.style.left = $('#mTools').offsetLeft + 'px'; dd.style.top = '34px';
+  const mt = center('#mTools'), ws = center('#ddWs'), en = center('#chkEnable'), ok = center('#dlgOk');
+  sA.style.visibility = keep[0]; dd.style.display = keep[1]; dlg.style.display = keep[2];
+  const ddWsPos = [ws[0] - 40, ws[1]];
+  WP = [
+    [3.6, 760, 520, 0], [5.0, mt[0], mt[1] + 4, 0], [5.6, mt[0], mt[1] + 4, 1],
+    [7.0, ddWsPos[0], ddWsPos[1], 0], [7.7, ddWsPos[0], ddWsPos[1], 1],
+    [9.6, en[0] + 6, en[1] + 4, 0], [10.2, en[0] + 6, en[1] + 4, 1],
+    [14.2, ok[0], ok[1] + 4, 0], [14.9, ok[0], ok[1] + 4, 1], [16.2, 940, 560, 0]
+  ];
+}
+function cursorAt(t) {
+  if (!WP || t < WP[0][0] || t > WP[WP.length - 1][0]) return null;
+  for (let i = 0; i < WP.length - 1; i++) {
+    const a = WP[i], b = WP[i + 1];
+    if (t >= a[0] && t <= b[0]) {
+      const k = ease((t - a[0]) / (b[0] - a[0] || 1));
+      return [lerp(a[1], b[1], k), lerp(a[2], b[2], k)];
+    }
+  }
+  return null;
+}
+function clickAge(t) { let best = 9; for (const w of WP) if (w[3]) best = Math.min(best, Math.abs(t - w[0]) * (t >= w[0] ? 1 : 99)); return best; }
+
+/* ---- terminal ---- */
+const TERM = [
+  { type: 'c', t: 0.8, text: 'git clone https://github.com/lunanoir21/obscura', cps: 40 },
+  { type: 'o', t: 2.8, text: "Cloning into 'obscura'..." },
+  { type: 'c', t: 3.6, text: 'cd obscura && cargo build --release', cps: 40 },
+  { type: 'o', t: 5.4, text: '   Compiling obscura-core v0.1.0' },
+  { type: 'o', t: 6.3, text: '   Compiling obscura v0.1.0' },
+  { type: 'o', t: 7.6, text: '    Finished `release` profile [optimized] target(s) in 14.81s' },
+  { type: 'c', t: 8.6, text: 'ln -s "$PWD/target/release/obscura" ~/.local/bin/obscura', cps: 60 },
+  { type: 'c', t: 10.2, text: 'obscura doctor', cps: 18 },
+  { type: 'o', t: 11.4, parts: [['target      ', '#a3a3a3'], ['127.0.0.1:4455', '#ededed']] },
+  { type: 'o', t: 11.7, parts: [['password    ', '#a3a3a3'], ['found', '#ededed']] },
+  { type: 'o', t: 12.0, parts: [['connection  ', '#a3a3a3'], ['ok', '#9dd6a4']] },
+  { type: 'o', t: 12.3, parts: [['recording   ', '#a3a3a3'], ['false', '#ededed']] }
+];
+const TL = 26;
+const tl = $('#tlines');
+TERM.forEach((r, i) => { const d = document.createElement('div'); d.className = 'ln'; d.style.top = (58 + i * TL) + 'px'; d.id = 'tl' + i; tl.appendChild(d); });
+const tend = document.createElement('div'); tend.className = 'ln'; tend.id = 'tend'; tend.style.top = (58 + TERM.length * TL) + 'px'; tl.appendChild(tend);
+const esc = s => s.replace(/&/g, '&amp;').replace(/</g, '&lt;');
+
+function termScene(lt) {
+  let cursorRow = -1, cursorCol = 0;
+  TERM.forEach((r, i) => {
+    const el = $('#tl' + i);
+    if (lt < r.t) { el.innerHTML = ''; return; }
+    if (r.type === 'c') {
+      const full = r.text, shown = typed(full, lt, r.t, r.cps);
+      el.innerHTML = '<span style="color:#6e6e6e">$ </span><span style="color:#ededed">' + esc(shown) + '</span>';
+      if (shown.length < full.length || lt < r.t + full.length / r.cps + 0.5) { cursorRow = i; cursorCol = shown.length; }
+    } else if (r.parts) {
+      el.innerHTML = r.parts.map(p => '<span style="color:' + p[1] + '">' + esc(p[0]) + '</span>').join('');
+    } else el.innerHTML = esc(r.text);
+  });
+  const endAt = 12.8;
+  tend.innerHTML = lt > endAt ? '<span style="color:#6e6e6e">$ </span><span class="cur" style="opacity:' + (Math.floor(lt * 2) % 2 ? 0 : 1) + '"></span>' : '';
+  if (cursorRow >= 0) {
+    const el = $('#tl' + cursorRow);
+    el.insertAdjacentHTML('beforeend', '<span class="cur" style="margin-left:1px"></span>');
+  }
+}
+
+/* ---- editors ---- */
+function mkLines(host, n) { const h = $(host); for (let i = 0; i < n; i++) { const d = document.createElement('div'); d.className = 'cl'; d.style.top = (i * 27) + 'px'; h.appendChild(d); } return [...h.children]; }
+const CL = mkLines('#codeC', 17), DL = mkLines('#codeD', 17);
+const hl = s => s.replace(/(#.*$)|("[^"]*")|\b(import|bind)\b|([^#"]+?(?=#|"|\b(?:import|bind)\b|$))/g, (m, c, q, k, o) =>
+  c ? '<span class="c">' + esc(c) + '</span>' : q ? '<span class="s">' + esc(q) + '</span>' : k ? '<span class="k">' + k + '</span>' : esc(m));
+
+/* TopBar.qml */
+const TOP = [
+  { n: 1, text: 'import QtQuick' }, { n: 2, text: 'import Quickshell' },
+  { n: 3, text: 'import "../vendor/meet/ui" as MeetModule' },
+  { n: 4, text: 'import "../vendor/obscura/ui" as ObscuraModule', add: true, t: 1.4, cps: 48 },
+  { n: 5, text: '' }, { n: 6, text: 'Row {' }, { n: 7, text: '    id: rightContent' }, { n: 8, text: '    spacing: barWindow.s(4)' }, { n: 9, text: '' },
+  { n: 10, text: '    ObscuraModule.ObscuraPill {', add: true, t: 3.6, cps: 44 },
+  { n: 11, text: '        pal: mocha', add: true, t: 4.7, cps: 44 },
+  { n: 12, text: '        u: barWindow.s(1)', add: true, t: 5.4, cps: 44 },
+  { n: 13, text: '    }', add: true, t: 6.2, cps: 44 },
+  { n: 14, text: '' }, { n: 15, text: '    MeetModule.MeetPill {' }, { n: 16, text: '        pal: mocha' }, { n: 17, text: '    }' }
+];
+/* Shell.qml */
+const SHELL = [
+  { n: 1, text: 'import QtQuick' }, { n: 2, text: 'import Quickshell' },
+  { n: 3, text: 'import "vendor/flare/ui" as FlareModule' },
+  { n: 4, text: 'import "vendor/obscura/ui" as ObscuraModule', add: true, t: 8.4, cps: 48 },
+  { n: 5, text: '' }, { n: 6, text: 'ShellRoot {' }, { n: 7, text: '    Main {}' }, { n: 8, text: '    TopBar {}' },
+  { n: 9, text: '    FlareModule.FlareHost {}' },
+  { n: 10, text: '    ObscuraModule.ObscuraPickerHost {}', add: true, t: 10.0, cps: 44 },
+  { n: 11, text: '}' }
+];
+const HYPR = [
+  { n: 1, text: 'source = ~/.config/hypr/colors.conf' }, { n: 2, text: '' },
+  { n: 3, text: 'bind = CTRL SHIFT, S, exec, grimblast --notify copy area' },
+  { n: 4, text: 'bind = SUPER, T, exec, kitty' }, { n: 5, text: '' },
+  { n: 6, text: '# obscura (OBS recording)', add: true, t: 1.0, cps: 40 },
+  { n: 7, text: 'bind = SUPER ALT, R, exec, obscura toggle', add: true, t: 2.2, cps: 40 },
+  { n: 8, text: 'bind = SUPER ALT SHIFT, R, exec, obscura pause', add: true, t: 3.8, cps: 40 }
+];
+function paintCode(lines, rows, lt, tab) {
+  lines.forEach((el, i) => {
+    const r = rows[i];
+    if (!r || (r.add && lt < r.t)) { el.innerHTML = ''; el.classList.remove('add'); return; }
+    const shown = r.add ? typed(r.text, lt, r.t, r.cps) : r.text;
+    el.classList.toggle('add', !!r.add && shown.length > 0);
+    el.innerHTML = '<i>' + r.n + '</i>' + hl(shown) + ((r.add && shown.length < r.text.length) ? '<span class="cur" style="height:16px;margin-left:1px"></span>' : '');
+  });
+}
+function sceneC(lt) {
+  const onShell = lt >= 7.0;
+  $('#tabTop').classList.toggle('on', !onShell); $('#tabShell').classList.toggle('on', onShell);
+  const hostA = $('#codeC');
+  paintCode(CL, onShell ? SHELL : TOP, lt, onShell ? 'shell' : 'top');
+  $('#svTop').textContent = lt >= 7.0 || (lt >= 6.8) ? '  ✓ ' + L.saved.toLowerCase() : (lt > 1.4 ? '  ●' : '');
+  $('#svTop').style.color = lt >= 6.8 ? '#9dd6a4' : '#e3cd92';
+  $('#svShell').textContent = lt >= 11.6 ? '  ✓ ' + L.saved.toLowerCase() : (lt > 8.4 ? '  ●' : '');
+  $('#svShell').style.color = lt >= 11.6 ? '#9dd6a4' : '#e3cd92';
+}
+function sceneD(lt) {
+  paintCode(DL, HYPR, lt, 'h');
+  $('#svHypr').textContent = lt >= 5.6 ? '  ✓ ' + L.saved.toLowerCase() : (lt > 1.0 ? '  ●' : '');
+  $('#svHypr').style.color = lt >= 5.6 ? '#9dd6a4' : '#e3cd92';
+  $('#toastD').style.opacity = lt >= 6.2 && lt < 8.6 ? 1 : 0;
+}
+
+/* ---- OBS scene ---- */
+function sceneA(lt) {
+  const t = lt + 3.6;
+  $('#dd').style.display = (t >= 5.7 && t < 7.8) ? 'block' : 'none';
+  $('#dd').style.left = ($('#mTools').offsetLeft) + 'px'; $('#dd').style.top = '34px';
+  $('#mTools').classList.toggle('hot', t >= 5.6 && t < 7.8);
+  $('#ddWs').classList.toggle('hot', t >= 6.7 && t < 7.8);
+  const dlg = t >= 7.9 && t < 15.3;
+  $('#dlg').style.display = dlg ? 'block' : 'none';
+  $('#dlg').style.opacity = ease((t - 7.9) / 0.35);
+  const on = t >= 10.2;
+  const box = $('#chkEnable'); box.classList.toggle('on', on); box.textContent = on ? '✓' : '';
+  $('#dlgOk').classList.toggle('hot', t >= 14.3 && t < 15.0);
+}
+
+/* ---- result ---- */
+function sceneE(lt) {
+  const rec = lt >= 3.2 && lt < 8.0;          // keys pressed at 1.2 and 7.0 are drawn below
+  const press1 = lt >= 1.2 && lt < 1.6, press2 = lt >= 7.0 && lt < 7.4;
+  const phase = lt < 1.5 ? 'idle' : lt < 7.2 ? 'rec' : lt < 9.4 ? 'saved' : 'idle';
+  const op = $('#op');
+  op.style.width = (phase === 'rec' ? 156 : phase === 'saved' ? 132 : 48) + 'px';
+  op.style.transition = 'none';
+  // width eases by hand so frames are deterministic
+  const target = phase === 'rec' ? 156 : phase === 'saved' ? 132 : 48;
+  const start = lt < 1.5 ? 0 : lt < 7.2 ? 1.5 : lt < 9.4 ? 7.2 : 9.4;
+  const prev = phase === 'rec' ? 48 : phase === 'saved' ? 156 : 132;
+  op.style.width = lerp(prev, target, ease((lt - start) / 0.45)) + 'px';
+  $('#lIdle').style.opacity = phase === 'idle' ? 1 : 0;
+  $('#lRec').style.opacity = phase === 'rec' ? 1 : 0;
+  $('#lSaved').style.opacity = phase === 'saved' ? 1 : 0;
+  $('#rdot').style.opacity = Math.floor(lt * 1.25) % 2 ? 0.4 : 1;
+  $('#clk').textContent = fmt(Math.max(0, lt - 1.6));
+  $('#savedTxt').textContent = L.ok;
+  const keys = [$('#k1'), $('#k2'), $('#k3')];
+  keys.forEach(k => { const p = press1 || press2; k.style.transform = p ? 'translateY(6px)' : 'none'; k.style.borderBottomWidth = p ? '1px' : '7px'; });
+}
+
+function seek(t) {
+  if (!WP) buildPath();
+  t = Math.min(Math.max(t, 0), DUR - 0.001);
+  for (const [id, a, b] of SC) {
+    const el = $('#' + id), on = t >= a && t < b;
+    el.style.visibility = on ? 'visible' : 'hidden';
+    const op = on ? Math.min(ease((t - a) / 0.45), ease((b - t) / 0.45)) : 0;
+    el.style.opacity = (id === 's0' && t < 0.45) ? 1 : op;
+    if (on) {
+      const lt = t - a;
+      if (id === 'sA') sceneA(lt);
+      if (id === 'sB') termScene(lt);
+      if (id === 'sC') sceneC(lt);
+      if (id === 'sD') sceneD(lt);
+      if (id === 'sE') sceneE(lt);
+    }
+  }
+  $('#t0a').textContent = L.t0a; $('#t0b').textContent = L.t0b; $('#tZa').textContent = L.tz1; $('#tZb').textContent = L.tz2;
+  // captions
+  const cap = CAPS.find(c => t >= c[0] && t < c[1]);
+  const capEl = $('#cap');
+  if (cap) {
+    $('#capMain').textContent = cap[2];
+    capEl.style.opacity = Math.min(ease((t - cap[0]) / 0.4), ease((cap[1] - t) / 0.3));
+  } else capEl.style.opacity = 0;
+  const sub = SUBS.find(s => t >= s[0] && t < s[1]);
+  $('#capSub').textContent = sub ? sub[2] : '';
+  $('#capSub').style.opacity = sub ? Math.min(ease((t - sub[0]) / 0.3), ease((sub[1] - t) / 0.25)) : 0;
+  // cursor
+  const cp = cursorAt(t), cu = $('#cursor'), rp = $('#ripple');
+  if (cp && t >= 3.6 && t < 17.2) {
+    cu.style.opacity = 1; cu.style.transform = 'translate(' + cp[0] + 'px,' + cp[1] + 'px)';
+    const age = clickAge(t);
+    if (age < 0.5) { rp.style.opacity = 0.9 * (1 - age / 0.5); rp.style.transform = 'translate(' + (cp[0] - 14) + 'px,' + (cp[1] - 14) + 'px) scale(' + (0.4 + age * 1.6) + ')'; }
+    else rp.style.opacity = 0;
+  } else { cu.style.opacity = 0; rp.style.opacity = 0; }
+}
+window.seek = seek; window.DUR = DUR;
+seek(0);
+</script>
+</body>
+</html>

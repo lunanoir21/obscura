@@ -12,6 +12,8 @@ Item {
     property var pal
     property real u: 1
     property string timerFont: "Space Mono"
+    // Doto is a dot matrix: it needs weight and size to stay legible in a bar.
+    readonly property bool dotFont: timerFont === "Doto"
     property string uiFont: "Bricolage Grotesque"
 
     readonly property string mode: {
@@ -172,7 +174,8 @@ Item {
                     text: ObscuraStore.clock
                     color: root.mode === "paused" ? root.pal.overlay2 : root.pal.text
                     font.family: root.timerFont
-                    font.pixelSize: 15 * root.u
+                    font.pixelSize: (root.dotFont ? 18 : 15) * root.u
+                    font.weight: root.dotFont ? Font.Black : Font.Medium
                     font.letterSpacing: 0.3 * root.u
                 }
                 Rectangle {

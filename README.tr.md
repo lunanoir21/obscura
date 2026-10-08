@@ -28,6 +28,8 @@ obscura, zaten kurulu olan OBS'i yerleşik WebSocket sunucusu (obs-websocket v5)
 
 ## Kurulum
 
+<p align="center"><img src="docs/assets/install.svg" width="780" alt="Animasyonlu terminal: git clone, cargo build, obscura doctor, obscura toggle"></p>
+
 Kaynaktan (Rust 1.85 ya da yenisi):
 
 ```sh

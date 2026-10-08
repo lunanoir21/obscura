@@ -28,6 +28,8 @@ obscura drives the OBS you already have through its built-in WebSocket server (o
 
 ## Install
 
+<p align="center"><img src="docs/assets/install.svg" width="780" alt="Animated terminal: git clone, cargo build, obscura doctor, obscura toggle"></p>
+
 From source (Rust 1.85 or newer):
 
 ```sh

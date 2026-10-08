@@ -37,15 +37,15 @@ Singleton {
         const dir = decodeURIComponent(Qt.resolvedUrl(".").toString().replace(/^file:\/\//, ""));
         return dir.endsWith("/") ? dir : dir + "/";
     }
-    // Quickshell started by the compositor may not inherit the login PATH.
+    // Quickshell started by the compositor may not inherit the login PATH, so
+    // the build beside this module and the usual install dirs are tried too.
     readonly property var candidates: [moduleDir + "../target/release/obscura", "obscura", homeDir + "/.local/bin/obscura", homeDir + "/.cargo/bin/obscura"]
-    readonly property string resolver: 'for c in "$@"; do '
-        + '  case $c in */*) [ -x "$c" ] || continue ;; *) command -v "$c" >/dev/null 2>&1 || continue ;; esac; '
-        + '  exec "$c" $MODE; '
-        + 'done; exit 127'
+    readonly property string resolver: 'for c in ' + candidates.map(c => "'" + c.replace(/'/g, "'\\''") + "'").join(" ")
+        + '; do case $c in */*) [ -x "$c" ] || continue ;; *) command -v "$c" >/dev/null 2>&1 || continue ;; esac; exec "$c" "$@"; done; echo "obscura binary not found" >&2; exit 127'
 
-    function command(mode) {
-        return ["env", "MODE=" + mode, "sh", "-c", root.resolver, "sh"].concat(root.candidates);
+    // `args` is an array: ["toggle"], ["set", "fps", "60"], ...
+    function command(args) {
+        return ["sh", "-c", root.resolver, "sh"].concat(args);
     }
 
     function handle(line) {
@@ -72,29 +72,89 @@ Singleton {
         if (state === "offline") {
             launcher.running = true;
         } else if (state === "idle" || active) {
-            ctl.command = command("toggle");
-            ctl.running = true;
+            act(["toggle"]);
         }
     }
 
     function pause() {
         if (active) {
-            ctl.command = command("pause");
-            ctl.running = true;
+            act(["pause"]);
         }
     }
 
+    // ---- panel data ----------------------------------------------------------
+    // What `obscura info` last said: scenes, audio inputs, video, recording
+    // settings, replay buffer. Empty until the panel has been opened once.
+    property var info: ({})
+    property string error: ""
+    readonly property bool hasInfo: info.scenes !== undefined
+
+    function refreshInfo() {
+        if (infoProc.running)
+            return;
+        infoProc.command = command(["info"]);
+        infoProc.running = true;
+    }
+
+    // Runs one obscura command, then asks for the info again. Several clicks in
+    // a row queue up, so none is lost and they never overlap.
+    property var queue: []
+    function act(args) {
+        root.queue = root.queue.concat([args]);
+        pump();
+    }
+    function pump() {
+        if (ctl.running || root.queue.length === 0)
+            return;
+        const next = root.queue[0];
+        root.queue = root.queue.slice(1);
+        ctl.command = command(next);
+        ctl.running = true;
+    }
+
+    function shot() {
+        act(["shot"]);
+    }
+
+    // ---- widget settings -------------------------------------------------------
+    property var cfg: ({})
+    readonly property string timerFont: cfg.timer_font || "Space Mono"
+    readonly property int timerSize: cfg.timer_size || 18
+    readonly property string buttonStyle: cfg.button_style || "circle"
+
+    function loadConfig() {
+        cfgProc.command = command(["config", "get"]);
+        cfgProc.running = true;
+    }
+    function setConfig(key, value) {
+        const next = Object.assign({}, root.cfg);
+        next[key] = value;
+        root.cfg = next; // show it at once; the file follows
+        act(["config", "set", key, String(value)]);
+    }
+
+    Component.onCompleted: loadConfig()
+
     function openFolder() {
         const p = root.savedPath;
-        if (!p)
+        if (p)
+            openDir(p.substring(0, p.lastIndexOf("/")));
+    }
+    function openDir(dir) {
+        if (!dir)
             return;
-        opener.command = ["xdg-open", p.substring(0, p.lastIndexOf("/"))];
+        opener.command = ["xdg-open", dir];
         opener.running = true;
     }
 
+    // True while the panel is open: state changes then refresh its data.
+    property bool wantInfo: false
+    onStateChanged: if (wantInfo)
+        refreshInfo()
+
     Process {
         id: watcher
-        command: root.command("watch")
+        command: root.command(["watch"])
         running: true
         stdout: SplitParser {
             onRead: line => root.handle(line)
@@ -129,6 +189,40 @@ Singleton {
 
     Process {
         id: ctl
+        stderr: StdioCollector {
+            id: ctlErr
+        }
+        onExited: code => {
+            root.error = code === 0 ? "" : ctlErr.text.trim().replace(/^obscura: /, "");
+            root.refreshInfo();
+            root.pump();
+        }
+    }
+
+    Process {
+        id: infoProc
+        stdout: StdioCollector {
+            id: infoOut
+            onStreamFinished: {
+                try {
+                    root.info = JSON.parse(infoOut.text);
+                } catch (e) {
+                }
+            }
+        }
+    }
+
+    Process {
+        id: cfgProc
+        stdout: StdioCollector {
+            id: cfgOut
+            onStreamFinished: {
+                try {
+                    root.cfg = JSON.parse(cfgOut.text);
+                } catch (e) {
+                }
+            }
+        }
     }
 
     Process {

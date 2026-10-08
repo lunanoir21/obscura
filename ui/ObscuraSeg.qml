@@ -29,7 +29,7 @@ Rectangle {
                 height: root.height - 6 * root.u
                 radius: 8 * root.u
                 color: on ? root.pal.surface1 : "transparent"
-                opacity: root.locked ? 0.45 : 1
+                opacity: root.locked ? 0.45 : (modelData.disabled === true ? 0.3 : 1)
                 Behavior on color {
                     ColorAnimation {
                         duration: 140
@@ -45,7 +45,7 @@ Rectangle {
                 }
                 MouseArea {
                     anchors.fill: parent
-                    enabled: !root.locked
+                    enabled: !root.locked && modelData.disabled !== true
                     cursorShape: Qt.PointingHandCursor
                     onClicked: root.picked(modelData.value)
                 }

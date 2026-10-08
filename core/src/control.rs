@@ -38,6 +38,25 @@ fn output_section(c: &mut Client) -> &'static str {
     }
 }
 
+/// The fastest real display's refresh rate, in whole Hz. A capture cannot be
+/// smoother than the screen it copies, so this is the useful ceiling for the
+/// frame rate. `None` when Hyprland cannot be asked.
+pub fn max_refresh_hz() -> Option<u32> {
+    let out = std::process::Command::new("hyprctl").args(["monitors", "-j"]).output().ok()?;
+    max_refresh(&String::from_utf8_lossy(&out.stdout))
+}
+
+pub fn max_refresh(monitors_json: &str) -> Option<u32> {
+    let v: Value = serde_json::from_str(monitors_json).ok()?;
+    v.as_array()?
+        .iter()
+        .filter(|m| !m["name"].as_str().unwrap_or_default().starts_with("HEADLESS"))
+        .filter_map(|m| m["refreshRate"].as_f64())
+        .map(|r| r.floor() as u32)
+        .max()
+        .filter(|hz| *hz > 0)
+}
+
 pub fn info(c: &mut Client) -> Result<Value> {
     let status = c.record_status()?;
 
@@ -84,6 +103,7 @@ pub fn info(c: &mut Client) -> Result<Value> {
         "recording": status.output_active,
         "scenes": scenes, "scene": scene, "inputs": inputs, "video": video,
         "record": { "dir": dir, "filename": filename, "format": format, "mode": section },
+        "limits": { "max_fps": max_refresh_hz() },
         "replay": { "enabled": replay_enabled, "active": replay_active, "seconds": replay_secs },
     }))
 }
@@ -173,5 +193,22 @@ pub fn set(c: &mut Client, key: &str, value: &str) -> Result<()> {
             set_profile(c, section, "RecRBTime", &secs.to_string())
         }
         other => bail!("unknown setting: {other}"),
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn picks_the_fastest_real_display() {
+        let json = r#"[{"name":"eDP-1","refreshRate":144.003},{"name":"HEADLESS-IO","refreshRate":240.0},{"name":"DP-2","refreshRate":59.95}]"#;
+        assert_eq!(max_refresh(json), Some(144));
+    }
+
+    #[test]
+    fn no_answer_when_hyprland_is_silent() {
+        assert_eq!(max_refresh(""), None);
+        assert_eq!(max_refresh("[]"), None);
     }
 }

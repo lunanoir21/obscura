@@ -26,6 +26,19 @@ Item {
     readonly property var record: info.record || ({})
     readonly property var replay: info.replay || ({})
     readonly property bool active: ObscuraStore.active
+    // The screen's refresh rate is the ceiling: a capture cannot be smoother.
+    readonly property int maxFps: (info.limits && info.limits.max_fps) || 0
+    readonly property var fpsOptions: {
+        const base = [24, 30, 60, 120];
+        // The screen's own rate (144, 165, ...) is worth offering when it is not a listed one.
+        if (maxFps > 60 && base.indexOf(maxFps) < 0)
+            base.push(maxFps);
+        return base.map(f => ({
+                    label: String(f),
+                    value: f,
+                    disabled: maxFps > 0 && f > maxFps
+                }));
+    }
     readonly property bool connected: ["idle", "starting", "recording", "paused", "stopping"].indexOf(ObscuraStore.state) >= 0
 
     Component.onCompleted: if (open)
@@ -471,9 +484,13 @@ Item {
                         u: root.u
                         uiFont: root.uiFont
                         locked: root.active
-                        options: [{label: "24", value: 24}, {label: "30", value: 30}, {label: "60", value: 60}, {label: "120", value: 120}]
+                        options: root.fpsOptions
                         current: root.video.fps
                         onPicked: v => ObscuraStore.act(["set", "fps", String(v)])
+                    }
+                    Hint {
+                        visible: root.maxFps > 0
+                        text: "Ekranın " + root.maxFps + " Hz; bundan yüksek kare hızı aynı kareyi tekrarlar, bu yüzden seçilemiyor."
                     }
                 }
                 Column {

@@ -46,6 +46,11 @@ enum Cmd {
     Raw { kind: String, data: Option<String> },
     /// Screen-share picker for xdg-desktop-portal-hyprland (run by xdph, not by hand)
     Picker,
+    /// Make xdph use obscura's picker, or go back to its own
+    PickerSetup {
+        #[arg(value_parser = ["install", "uninstall"])]
+        action: String,
+    },
     /// Check that OBS and its WebSocket server are reachable
     Doctor,
 }
@@ -70,6 +75,15 @@ fn run() -> Result<()> {
     let conn = Connection::discover();
     if matches!(cli.cmd, Cmd::Doctor) {
         return doctor(&conn);
+    }
+    if let Cmd::PickerSetup { action } = &cli.cmd {
+        let msg = if action == "install" {
+            obscura_core::install::install()?
+        } else {
+            obscura_core::install::uninstall()?
+        };
+        println!("{msg}\nrestart the portal to apply: systemctl --user restart xdg-desktop-portal-hyprland");
+        return Ok(());
     }
     if matches!(cli.cmd, Cmd::Picker) {
         return picker();
@@ -132,7 +146,7 @@ fn run() -> Result<()> {
             println!("{}", c.request(&kind, data)?);
         }
         Cmd::Config { .. } => unreachable!(),
-        Cmd::Doctor | Cmd::Watch | Cmd::Picker => unreachable!(),
+        Cmd::Doctor | Cmd::Watch | Cmd::Picker | Cmd::PickerSetup { .. } => unreachable!(),
     }
     Ok(())
 }

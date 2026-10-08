@@ -6,3 +6,4 @@ ObscuraSeg 1.0 ObscuraSeg.qml
 ObscuraSwitch 1.0 ObscuraSwitch.qml
 ObscuraButton 1.0 ObscuraButton.qml
 ObscuraField 1.0 ObscuraField.qml
+ObscuraPickerHost 1.0 ObscuraPickerHost.qml

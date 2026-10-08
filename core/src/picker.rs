@@ -6,13 +6,15 @@
 //! token, and kind `screen`, `window` or `region`.
 //!
 //! This process draws nothing itself. It hands the list to the Quickshell
-//! widget through files in the runtime directory and waits for the answer, so
+//! widget over a Unix socket and waits for the answer, so
 //! the picker looks like the rest of the desktop. If the widget does not answer
-//! within a moment (Quickshell not running), it runs the stock picker, so
+//! within a moment (or nothing listens), it runs the stock picker, so
 //! screen sharing never depends on obscura being healthy.
 
+use std::io::{BufRead, BufReader, Write};
+use std::os::unix::net::UnixStream;
 use std::path::{Path, PathBuf};
-use std::time::{Duration, Instant, SystemTime, UNIX_EPOCH};
+use std::time::Duration;
 
 use anyhow::{Result, bail};
 use serde::Serialize;
@@ -62,80 +64,62 @@ pub fn selection_line(kind: &str, id: &str, remember: bool) -> Result<String> {
     Ok(format!("[SELECTION]{}/{kind}:{id}", if remember { "r" } else { "" }))
 }
 
-fn runtime_dir() -> PathBuf {
+/// Where the widget listens. Absent or refusing connections means "no widget".
+pub fn socket_path() -> PathBuf {
     std::env::var_os("XDG_RUNTIME_DIR")
         .map(PathBuf::from)
         .unwrap_or_else(std::env::temp_dir)
-        .join("obscura")
-}
-
-fn now_ms() -> u128 {
-    SystemTime::now().duration_since(UNIX_EPOCH).map(|d| d.as_millis()).unwrap_or(0)
-}
-
-fn write_atomic(path: &Path, text: &str) -> Result<()> {
-    let tmp = path.with_extension("tmp");
-    std::fs::write(&tmp, text)?;
-    std::fs::rename(tmp, path)?;
-    Ok(())
-}
-
-fn read_json(path: &Path) -> Option<Value> {
-    serde_json::from_str(&std::fs::read_to_string(path).ok()?).ok()
+        .join("obscura/picker.sock")
 }
 
 /// How long the widget has to say it saw the request before we give up on it.
 const ACK_WAIT: Duration = Duration::from_millis(2500);
 /// How long a person gets to choose.
 const ANSWER_WAIT: Duration = Duration::from_secs(600);
-const POLL: Duration = Duration::from_millis(60);
 
 pub enum Outcome {
     /// Print this line, exit 0.
     Selected(String),
     /// The person closed the picker: exit non-zero.
     Cancelled,
-    /// The widget never answered: run the stock picker.
+    /// The widget is not there or not answering: run the stock picker.
     NoWidget,
 }
 
+/// One JSON line each way. We send `{"windows": [...]}`; the widget answers
+/// `{"ack": true}` at once, then either `{"kind","value","remember"}` or
+/// `{"cancel": true}` when the person has chosen.
 pub fn ask_widget(list: &str) -> Result<Outcome> {
-    let dir = runtime_dir();
-    std::fs::create_dir_all(&dir)?;
-    let (req, ack, ans) = (dir.join("request.json"), dir.join("ack.json"), dir.join("answer.json"));
-    let id = format!("{}-{}", now_ms(), std::process::id());
-    let _ = std::fs::remove_file(&ack);
-    let _ = std::fs::remove_file(&ans);
-    write_atomic(
-        &req,
-        &json!({ "id": id, "ts": now_ms() as u64, "windows": parse_windows(list) }).to_string(),
-    )?;
+    ask_at(&socket_path(), list)
+}
 
-    let mine = |p: &Path| read_json(p).is_some_and(|v| v["id"] == id);
-    let started = Instant::now();
-    let outcome = loop {
-        if mine(&ans) {
-            let v = read_json(&ans).unwrap_or(Value::Null);
-            break match (v["kind"].as_str(), v["value"].as_str()) {
-                (Some(kind), Some(value)) => {
-                    Outcome::Selected(selection_line(kind, value, v["remember"].as_bool().unwrap_or(false))?)
-                }
-                _ => Outcome::Cancelled,
-            };
+pub fn ask_at(path: &Path, list: &str) -> Result<Outcome> {
+    let Ok(mut sock) = UnixStream::connect(path) else { return Ok(Outcome::NoWidget) };
+    sock.set_write_timeout(Some(ACK_WAIT))?;
+    let req = json!({ "windows": parse_windows(list) }).to_string();
+    if sock.write_all(req.as_bytes()).and_then(|_| sock.write_all(b"\n")).is_err() {
+        return Ok(Outcome::NoWidget);
+    }
+
+    let mut lines = BufReader::new(sock.try_clone()?);
+    let mut next = |wait: Duration| -> Option<Value> {
+        sock.set_read_timeout(Some(wait)).ok()?;
+        let mut line = String::new();
+        match lines.read_line(&mut line) {
+            Ok(n) if n > 0 => serde_json::from_str(line.trim()).ok(),
+            _ => None,
         }
-        let acked = mine(&ack);
-        if !acked && started.elapsed() > ACK_WAIT {
-            break Outcome::NoWidget;
-        }
-        if started.elapsed() > ANSWER_WAIT {
-            break Outcome::Cancelled;
-        }
-        std::thread::sleep(POLL);
     };
-    let _ = std::fs::remove_file(&req);
-    let _ = std::fs::remove_file(&ack);
-    let _ = std::fs::remove_file(&ans);
-    Ok(outcome)
+    if next(ACK_WAIT).is_none_or(|v| v["ack"] != true) {
+        return Ok(Outcome::NoWidget);
+    }
+    let Some(v) = next(ANSWER_WAIT) else { return Ok(Outcome::NoWidget) };
+    Ok(match (v["kind"].as_str(), v["value"].as_str()) {
+        (Some(kind), Some(value)) => {
+            Outcome::Selected(selection_line(kind, value, v["remember"].as_bool().unwrap_or(false))?)
+        }
+        _ => Outcome::Cancelled,
+    })
 }
 
 #[cfg(test)]
@@ -180,43 +164,58 @@ mod tests {
 #[cfg(test)]
 mod flow {
     use super::*;
+    use std::os::unix::net::UnixListener;
 
-    // One test owns XDG_RUNTIME_DIR for the whole process.
+    fn widget(path: PathBuf, answer: Option<&'static str>) -> std::thread::JoinHandle<Value> {
+        let listener = UnixListener::bind(&path).unwrap();
+        std::thread::spawn(move || {
+            let (mut conn, _) = listener.accept().unwrap();
+            let mut line = String::new();
+            BufReader::new(conn.try_clone().unwrap()).read_line(&mut line).unwrap();
+            let req: Value = serde_json::from_str(line.trim()).unwrap();
+            if let Some(a) = answer {
+                writeln!(conn, "{{\"ack\": true}}").unwrap();
+                writeln!(conn, "{a}").unwrap();
+            }
+            req
+        })
+    }
+
+    fn tmp(name: &str) -> PathBuf {
+        std::env::temp_dir().join(format!("obscura-{name}-{}.sock", std::process::id()))
+    }
+
     #[test]
-    fn widget_answers_and_stale_files_are_cleaned_up() {
-        let dir = std::env::temp_dir().join(format!("obscura-test-{}", std::process::id()));
-        std::fs::create_dir_all(&dir).unwrap();
-        // SAFETY: no other test in this binary reads or sets the variable.
-        unsafe { std::env::set_var("XDG_RUNTIME_DIR", &dir) };
-        let run = dir.join("obscura");
-
-        // A widget that acks, then picks a window with "remember".
-        let run2 = run.clone();
-        let widget = std::thread::spawn(move || {
-            let req = run2.join("request.json");
-            let v = loop {
-                if let Some(v) = read_json(&req) {
-                    break v;
-                }
-                std::thread::sleep(Duration::from_millis(20));
-            };
-            let id = v["id"].as_str().unwrap().to_owned();
-            assert_eq!(v["windows"][0]["class"], "kitty");
-            write_atomic(&run2.join("ack.json"), &json!({ "id": id }).to_string()).unwrap();
-            write_atomic(
-                &run2.join("answer.json"),
-                &json!({ "id": id, "kind": "window", "value": "1781998000", "remember": true }).to_string(),
-            )
-            .unwrap();
-        });
-        let out = ask_widget("1781998000[HC>]kitty[HT>]t[HE>]1[HA>]").unwrap();
-        widget.join().unwrap();
+    fn widget_picks_a_window_with_remember() {
+        let p = tmp("pick");
+        let w = widget(p.clone(), Some(r#"{"kind":"window","value":"1781998000","remember":true}"#));
+        let out = ask_at(&p, "1781998000[HC>]kitty[HT>]t[HE>]1[HA>]").unwrap();
+        let req = w.join().unwrap();
+        assert_eq!(req["windows"][0]["class"], "kitty");
         assert!(matches!(out, Outcome::Selected(ref l) if l == "[SELECTION]r/window:1781998000"));
-        assert!(!run.join("request.json").exists());
+        std::fs::remove_file(p).ok();
+    }
 
-        // Nobody home: falls through to the stock picker after the ack timeout.
-        let out = ask_widget("").unwrap();
-        assert!(matches!(out, Outcome::NoWidget));
-        std::fs::remove_dir_all(&dir).ok();
+    #[test]
+    fn closing_the_picker_cancels() {
+        let p = tmp("cancel");
+        let w = widget(p.clone(), Some(r#"{"cancel":true}"#));
+        assert!(matches!(ask_at(&p, "").unwrap(), Outcome::Cancelled));
+        w.join().unwrap();
+        std::fs::remove_file(p).ok();
+    }
+
+    #[test]
+    fn no_listener_means_no_widget() {
+        assert!(matches!(ask_at(&tmp("none"), "").unwrap(), Outcome::NoWidget));
+    }
+
+    #[test]
+    fn a_widget_that_hangs_up_falls_back() {
+        let p = tmp("hangup");
+        let w = widget(p.clone(), None);
+        assert!(matches!(ask_at(&p, "").unwrap(), Outcome::NoWidget));
+        w.join().unwrap();
+        std::fs::remove_file(p).ok();
     }
 }

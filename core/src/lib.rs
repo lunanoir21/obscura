@@ -6,6 +6,7 @@
 pub mod auth;
 pub mod client;
 pub mod config;
+pub mod install;
 pub mod control;
 pub mod uiconfig;
 pub mod paths;

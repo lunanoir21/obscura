@@ -9,6 +9,7 @@ pub mod config;
 pub mod control;
 pub mod uiconfig;
 pub mod paths;
+pub mod picker;
 pub mod watch;
 
 pub use client::{Client, RecordStatus};

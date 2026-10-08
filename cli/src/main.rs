@@ -41,6 +41,11 @@ enum Cmd {
         #[command(subcommand)]
         action: ConfigCmd,
     },
+    /// Send any obs-websocket request and print the response (for debugging)
+    #[command(hide = true)]
+    Raw { kind: String, data: Option<String> },
+    /// Screen-share picker for xdg-desktop-portal-hyprland (run by xdph, not by hand)
+    Picker,
     /// Check that OBS and its WebSocket server are reachable
     Doctor,
 }
@@ -65,6 +70,9 @@ fn run() -> Result<()> {
     let conn = Connection::discover();
     if matches!(cli.cmd, Cmd::Doctor) {
         return doctor(&conn);
+    }
+    if matches!(cli.cmd, Cmd::Picker) {
+        return picker();
     }
     if let Cmd::Config { action } = &cli.cmd {
         match action {
@@ -116,8 +124,15 @@ fn run() -> Result<()> {
         Cmd::Replay { action } => control::replay(&mut c, &action)?,
         Cmd::Shot => println!("{}", json!({ "path": control::screenshot(&mut c)? })),
         Cmd::Set { key, value } => control::set(&mut c, &key, &value)?,
+        Cmd::Raw { kind, data } => {
+            let data = match data {
+                Some(d) => serde_json::from_str(&d)?,
+                None => serde_json::Value::Null,
+            };
+            println!("{}", c.request(&kind, data)?);
+        }
         Cmd::Config { .. } => unreachable!(),
-        Cmd::Doctor | Cmd::Watch => unreachable!(),
+        Cmd::Doctor | Cmd::Watch | Cmd::Picker => unreachable!(),
     }
     Ok(())
 }
@@ -150,4 +165,22 @@ fn watch(conn: &Connection) -> Result<()> {
             && out.flush().is_ok()
     });
     Ok(())
+}
+
+/// Asks the widget; if there is none, the stock picker takes over unchanged.
+fn picker() -> Result<()> {
+    use obscura_core::picker::{Outcome, ask_widget};
+    use std::os::unix::process::CommandExt;
+    let list = std::env::var("XDPH_WINDOW_SHARING_LIST").unwrap_or_default();
+    match ask_widget(&list) {
+        Ok(Outcome::Selected(line)) => {
+            println!("{line}");
+            Ok(())
+        }
+        Ok(Outcome::Cancelled) => std::process::exit(1),
+        Ok(Outcome::NoWidget) | Err(_) => {
+            let err = std::process::Command::new("hyprland-share-picker").exec();
+            bail!("cannot run hyprland-share-picker: {err}")
+        }
+    }
 }

@@ -286,9 +286,9 @@ Item {
                         u: root.u
                         uiFont: root.uiFont
                         primary: true
-                        dim: !root.connected
-                        label: "Kaydı başlat"
-                        onClicked: ObscuraStore.toggle()
+                        dim: ObscuraStore.state === "disabled" || ObscuraStore.state === "auth" || ObscuraStore.launching
+                        label: root.connected ? "Kaydı başlat" : ObscuraStore.launching ? "OBS açılıyor…" : ObscuraStore.state === "offline" ? "OBS'i aç" : "OBS ayarı gerekli"
+                        onClicked: root.connected ? ObscuraStore.toggle() : ObscuraStore.openObs()
                     }
                     ObscuraButton {
                         visible: root.active
@@ -468,7 +468,7 @@ Item {
                             pal: root.pal
                             u: root.u
                             monoFont: root.monoFont
-                            text: root.record.dir || ""
+                            source: root.record.dir || ""
                             onCommitted: v => {
                                 if (v !== root.record.dir)
                                     ObscuraStore.act(["set", "dir", v]);
@@ -497,7 +497,7 @@ Item {
                         pal: root.pal
                         u: root.u
                         monoFont: root.monoFont
-                        text: root.record.filename || ""
+                        source: root.record.filename || ""
                         onCommitted: v => {
                             if (v !== root.record.filename)
                                 ObscuraStore.act(["set", "filename", v]);
@@ -904,6 +904,40 @@ Item {
                             font.family: root.uiFont
                             font.pixelSize: 13 * root.u
                         }
+                    }
+                }
+                Column {
+                    width: parent.width
+                    spacing: 8 * root.u
+                    Cap {
+                        text: "OBS bağlantısı"
+                    }
+                    Row {
+                        width: parent.width
+                        spacing: 10 * root.u
+                        ObscuraField {
+                            width: 110 * root.u
+                            pal: root.pal
+                            u: root.u
+                            monoFont: root.monoFont
+                            numeric: true
+                            source: ObscuraStore.cfg.obs_port > 0 ? String(ObscuraStore.cfg.obs_port) : ""
+                            onCommitted: v => ObscuraStore.setConfig("obs_port", v === "" ? 0 : parseInt(v))
+                        }
+                        Text {
+                            anchors.verticalCenter: parent.verticalCenter
+                            width: parent.width - 110 * root.u - 10 * root.u
+                            wrapMode: Text.WordWrap
+                            text: ObscuraStore.cfg.obs_port > 0 ? "Port " + ObscuraStore.cfg.obs_port + " kullanılıyor." : "Boş: OBS'in kendi ayarı kullanılır (WebSocket Server Settings)."
+                            color: root.pal.overlay1
+                            font.family: root.uiFont
+                            font.pixelSize: 11.5 * root.u
+                        }
+                    }
+                    Hint {
+                        visible: ObscuraStore.error !== ""
+                        text: ObscuraStore.error
+                        color: root.pal.yellow
                     }
                 }
                 Column {

@@ -17,7 +17,8 @@ obscura drives the OBS you already have through its built-in WebSocket server (o
 
 ```sh
 obscura doctor   # check OBS and its WebSocket server
-obscura toggle   # start, or stop and print the saved file
+obscura toggle   # start, or stop and print the saved file (opens OBS first if it is closed)
+obscura open     # start OBS in the background, minimised, not recording
 obscura status   # recording state as JSON
 obscura pause
 ```
@@ -29,6 +30,10 @@ Bind it in Hyprland:
 ```
 bind = SUPER ALT, R, exec, obscura toggle
 ```
+
+## Connection
+
+obscura reads the port and password from OBS's own settings. To use another port, set it in the panel (Görünüm > OBS bağlantısı), with `obscura config set obs_port 4466`, or with `OBSCURA_PORT`. 0 means "use OBS's setting".
 
 ## Hooks
 

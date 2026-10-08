@@ -1,6 +1,6 @@
 use anyhow::{Result, bail};
 use clap::{Parser, Subcommand};
-use obscura_core::{Client, Connection, client::events, control};
+use obscura_core::{Client, Connection, client::{ConnectError, events}, control, launch};
 use serde_json::json;
 
 #[derive(Parser)]
@@ -55,6 +55,8 @@ enum Cmd {
     Meters,
     /// List the folders inside a path as JSON (for the widget's folder chooser)
     Ls { path: String },
+    /// Start OBS in the background (minimised, not recording) if it is not running
+    Open,
     /// Check that OBS and its WebSocket server are reachable
     Doctor,
 }
@@ -109,7 +111,19 @@ fn run() -> Result<()> {
     if matches!(cli.cmd, Cmd::Watch) {
         return watch(&conn);
     }
-    let mut c = Client::connect(&conn, events::NONE)?;
+    let mut c = match Client::connect(&conn, events::NONE) {
+        Ok(c) => c,
+        // OBS is closed: starting or toggling a recording opens it (and records),
+        // `open` just opens it.
+        Err(ConnectError::Unreachable(_)) if matches!(cli.cmd, Cmd::Start | Cmd::Toggle | Cmd::Open) => {
+            launch::start_obs(!matches!(cli.cmd, Cmd::Open))?;
+            return Ok(());
+        }
+        Err(e) => return Err(e.into()),
+    };
+    if matches!(cli.cmd, Cmd::Open) {
+        return Ok(()); // already reachable
+    }
     match cli.cmd {
         Cmd::Status => {
             let s = c.record_status()?;
@@ -157,7 +171,7 @@ fn run() -> Result<()> {
             println!("{}", c.request(&kind, data)?);
         }
         Cmd::Config { .. } => unreachable!(),
-        Cmd::Doctor | Cmd::Watch | Cmd::Meters | Cmd::Ls { .. } | Cmd::Picker | Cmd::PickerSetup { .. } => unreachable!(),
+        Cmd::Doctor | Cmd::Watch | Cmd::Meters | Cmd::Open | Cmd::Ls { .. } | Cmd::Picker | Cmd::PickerSetup { .. } => unreachable!(),
     }
     Ok(())
 }

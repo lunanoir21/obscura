@@ -70,10 +70,27 @@ Singleton {
 
     function toggle() {
         if (state === "offline") {
-            launcher.running = true;
+            launching = true;
+            launchGiveUp.restart();
+            act(["start"]); // the CLI opens OBS and starts recording
         } else if (state === "idle" || active) {
             act(["toggle"]);
         }
+    }
+
+    // True from the click that starts OBS until it answers (or gives up).
+    property bool launching: false
+    function openObs() {
+        if (state !== "offline" || launching)
+            return;
+        launching = true;
+        launchGiveUp.restart();
+        act(["open"]);
+    }
+    Timer {
+        id: launchGiveUp
+        interval: 25000
+        onTriggered: root.launching = false
     }
 
     function pause() {
@@ -210,6 +227,8 @@ Singleton {
         next[key] = value;
         root.cfg = next; // show it at once; the file follows
         act(["config", "set", key, String(value)]);
+        if (key === "obs_port")
+            reconnectSoon.restart();
     }
 
     Component.onCompleted: loadConfig()
@@ -228,8 +247,12 @@ Singleton {
 
     // True while the panel is open: state changes then refresh its data.
     property bool wantInfo: false
-    onStateChanged: if (wantInfo)
-        refreshInfo()
+    onStateChanged: {
+        if (wantInfo)
+            refreshInfo();
+        if (state !== "offline")
+            launching = false;
+    }
 
     Process {
         id: watcher
@@ -241,8 +264,18 @@ Singleton {
         stderr: SplitParser {
             onRead: line => console.warn("obscura watch:", line)
         }
-        onRunningChanged: if (!running)
-            restart.start()
+        onRunningChanged: if (!running) {
+            restart.interval = root.fastRestart ? 300 : 5000;
+            root.fastRestart = false;
+            restart.start();
+        }
+    }
+
+    property bool fastRestart: false
+    // The watcher reads its connection settings once; after a change, start it again.
+    function reconnect() {
+        fastRestart = true;
+        watcher.running = false;
     }
 
     // Brings the watcher back if it ever stops.
@@ -264,6 +297,13 @@ Singleton {
         id: savedTimer
         interval: 2500
         onTriggered: root.justSaved = false
+    }
+
+    // After the setting is on disk (the queue runs in order, so a moment is plenty).
+    Timer {
+        id: reconnectSoon
+        interval: 600
+        onTriggered: root.reconnect()
     }
 
     Process {
@@ -314,9 +354,4 @@ Singleton {
         id: opener
     }
 
-    // OBS closed: open it minimised and start recording, as the pill asks.
-    Process {
-        id: launcher
-        command: ["obs", "--minimize-to-tray", "--startrecording"]
-    }
 }

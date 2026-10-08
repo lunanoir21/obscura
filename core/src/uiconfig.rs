@@ -16,7 +16,7 @@ fn path() -> Option<PathBuf> {
 
 fn defaults() -> Map<String, Value> {
     let v = json!({ "timer_font": "Space Mono", "timer_size": 18, "button_style": "circle",
-        "notify_saved": true, "copy_path": false });
+        "notify_saved": true, "copy_path": false, "obs_port": 0 });
     v.as_object().cloned().unwrap_or_default()
 }
 
@@ -53,6 +53,10 @@ fn validate(key: &str, value: &str) -> Result<Value> {
             }
             json!(value)
         }
+        "obs_port" => {
+            let n: u32 = value.parse().ok().filter(|n| *n <= 65535).ok_or_else(|| anyhow::anyhow!("obs_port must be 0-65535 (0 = use OBS's own setting)"))?;
+            json!(n)
+        }
         "notify_saved" | "copy_path" => match value {
             "true" => json!(true),
             "false" => json!(false),
@@ -87,5 +91,8 @@ mod tests {
         assert!(validate("timer_size", "24").is_ok());
         assert!(validate("button_style", "blob").is_err());
         assert!(validate("nope", "1").is_err());
+        assert!(validate("obs_port", "4466").is_ok());
+        assert!(validate("obs_port", "0").is_ok());
+        assert!(validate("obs_port", "70000").is_err());
     }
 }

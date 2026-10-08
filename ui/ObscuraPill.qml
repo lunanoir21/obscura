@@ -57,7 +57,7 @@ Item {
             return "rec";
         if (s === "paused")
             return "paused";
-        if (s === "disabled" || s === "auth")
+        if (s === "disabled" || s === "auth" || (s === "offline" && ObscuraStore.launching))
             return "problem";
         return "idle";
     }
@@ -306,11 +306,11 @@ Item {
                     width: 8 * root.u
                     height: width
                     radius: width / 2
-                    color: root.pal.yellow
+                    color: ObscuraStore.state === "offline" ? root.pal.overlay1 : root.pal.yellow
                 }
                 Text {
                     anchors.verticalCenter: parent.verticalCenter
-                    text: ObscuraStore.state === "auth" ? "Parola gerekli" : "OBS sunucusu kapalı"
+                    text: ObscuraStore.state === "auth" ? "Parola gerekli" : ObscuraStore.state === "offline" ? "OBS açılıyor…" : "OBS sunucusu kapalı"
                     color: root.pal.text
                     font.family: root.uiFont
                     font.pixelSize: 13 * root.u
@@ -329,7 +329,9 @@ Item {
         onClicked: mouse => {
             if (mouse.button === Qt.RightButton)
                 ObscuraStore.pause();
-            else if (root.mode === "rec" || root.mode === "paused" || root.mode === "idle")
+            else if (ObscuraStore.state === "offline")
+                ObscuraStore.openObs(); // OBS is closed: start it in the background
+            else if (root.mode === "rec" || root.mode === "paused" || root.mode === "idle" || root.mode === "problem")
                 root.togglePanel();
         }
     }

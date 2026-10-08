@@ -8,6 +8,7 @@ pub mod client;
 pub mod config;
 pub mod hooks;
 pub mod install;
+pub mod launch;
 pub mod meters;
 pub mod control;
 pub mod uiconfig;

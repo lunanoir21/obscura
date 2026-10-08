@@ -38,9 +38,12 @@ impl Connection {
                 _ => obs.server_password.filter(|p| !p.is_empty()),
             }
         });
+        // Highest first: environment, obscura's own setting, OBS's saved setting.
+        let own = crate::uiconfig::get()["obs_port"].as_u64().filter(|p| (1..=65535).contains(p)).map(|p| p as u16);
         let port = std::env::var("OBSCURA_PORT")
             .ok()
             .and_then(|p| p.parse().ok())
+            .or(own)
             .or(obs.server_port)
             .unwrap_or(4455);
 

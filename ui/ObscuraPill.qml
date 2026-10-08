@@ -335,9 +335,6 @@ Item {
     }
 
     Loader {
-        property real t0: 0
-        onActiveChanged: if (active) t0 = Date.now()
-        onLoaded: console.log("OBSCURA-DBG panel created in", Date.now() - t0, "ms")
         active: root.panelAlive
         sourceComponent: ObscuraPanel {
             pal: root.pal

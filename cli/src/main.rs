@@ -53,6 +53,8 @@ enum Cmd {
     },
     /// Print audio input levels as JSON lines until killed (used by the panel)
     Meters,
+    /// List the folders inside a path as JSON (for the widget's folder chooser)
+    Ls { path: String },
     /// Check that OBS and its WebSocket server are reachable
     Doctor,
 }
@@ -85,6 +87,10 @@ fn run() -> Result<()> {
             obscura_core::install::uninstall()?
         };
         println!("{msg}\nrestart the portal to apply: systemctl --user restart xdg-desktop-portal-hyprland");
+        return Ok(());
+    }
+    if let Cmd::Ls { path } = &cli.cmd {
+        println!("{}", control::browse(path)?);
         return Ok(());
     }
     if matches!(cli.cmd, Cmd::Picker) {
@@ -151,7 +157,7 @@ fn run() -> Result<()> {
             println!("{}", c.request(&kind, data)?);
         }
         Cmd::Config { .. } => unreachable!(),
-        Cmd::Doctor | Cmd::Watch | Cmd::Meters | Cmd::Picker | Cmd::PickerSetup { .. } => unreachable!(),
+        Cmd::Doctor | Cmd::Watch | Cmd::Meters | Cmd::Ls { .. } | Cmd::Picker | Cmd::PickerSetup { .. } => unreachable!(),
     }
     Ok(())
 }

@@ -55,6 +55,7 @@ Item {
         } else {
             anim = false;
             closeTimer.restart();
+            ObscuraStore.closeBrowser();
             ObscuraStore.wantInfo = false;
         }
     }
@@ -71,7 +72,7 @@ Item {
     }
 
     readonly property real chrome: tabs.y + tabs.height + 36 * u
-    readonly property real maxCardHeight: Math.max(c0.height, c1.height, c2.height) + chrome
+    readonly property real maxCardHeight: Math.max(c0.height, c1.height, c2.height, browser.height) + chrome
 
     // True while the card scales in or out: it is then drawn once into a
     // texture instead of being re-rendered, text and all, every frame.
@@ -134,7 +135,7 @@ Item {
             x: popup.pad
             y: popup.pad + (root.anim ? 0 : -8 * root.u)
             width: 400 * root.u
-            height: (root.tab === 0 ? c0.height : root.tab === 1 ? c1.height : c2.height) + root.chrome
+            height: (root.tab === 0 ? c0.height : root.tab === 1 ? (ObscuraStore.browsing ? browser.height : c1.height) : c2.height) + root.chrome
             radius: 22 * root.u
             color: root.pal.mantle
             border.width: 1
@@ -451,7 +452,7 @@ Item {
                 y: tabs.y + tabs.height + 16 * root.u
                 width: parent.width - 40 * root.u
                 spacing: 16 * root.u
-                visible: root.tab === 1
+                visible: root.tab === 1 && !ObscuraStore.browsing
 
                 Column {
                     width: parent.width
@@ -459,15 +460,29 @@ Item {
                     Cap {
                         text: "Kayıt klasörü"
                     }
-                    ObscuraField {
+                    Row {
                         width: parent.width
-                        pal: root.pal
-                        u: root.u
-                        monoFont: root.monoFont
-                        text: root.record.dir || ""
-                        onCommitted: v => {
-                            if (v !== root.record.dir)
-                                ObscuraStore.act(["set", "dir", v]);
+                        spacing: 8 * root.u
+                        ObscuraField {
+                            width: parent.width - 76 * root.u - 8 * root.u
+                            pal: root.pal
+                            u: root.u
+                            monoFont: root.monoFont
+                            text: root.record.dir || ""
+                            onCommitted: v => {
+                                if (v !== root.record.dir)
+                                    ObscuraStore.act(["set", "dir", v]);
+                            }
+                        }
+                        ObscuraButton {
+                            width: 76 * root.u
+                            height: 38 * root.u
+                            pal: root.pal
+                            u: root.u
+                            uiFont: root.uiFont
+                            dim: !root.connected
+                            label: "Seç"
+                            onClicked: ObscuraStore.openBrowser()
                         }
                     }
                 }
@@ -487,6 +502,20 @@ Item {
                             if (v !== root.record.filename)
                                 ObscuraStore.act(["set", "filename", v]);
                         }
+                    }
+                    Hint {
+                        visible: !!root.record.example
+                        text: "Sonraki dosya: " + root.record.example
+                        color: root.pal.overlay1
+                        font.family: root.monoFont
+                        font.pixelSize: 11 * root.u
+                        elide: Text.ElideMiddle
+                        wrapMode: Text.NoWrap
+                    }
+                    Hint {
+                        visible: root.record.exists === true
+                        text: root.record.overwrite === true ? "Bu adla bir dosya zaten var ve üzerine yazılacak." : "Bu adla bir dosya zaten var; OBS yenisinin sonuna (1) ekleyerek kaydeder."
+                        color: root.record.overwrite === true ? root.pal.red : root.pal.yellow
                     }
                     Hint {
                         text: "%CCYY yıl  %MM ay  %DD gün  %hh saat  %mm dakika  %ss saniye"
@@ -596,6 +625,149 @@ Item {
                     visible: ObscuraStore.error !== ""
                     text: ObscuraStore.error
                     color: root.pal.yellow
+                }
+            }
+
+            // ---- Klasör seçici -----------------------------------------------
+            Item {
+                id: browser
+                x: 20 * root.u
+                y: tabs.y + tabs.height + 16 * root.u
+                width: parent.width - 40 * root.u
+                height: Math.max(c1.height, 480 * root.u)
+                visible: root.tab === 1 && ObscuraStore.browsing
+
+                Row {
+                    id: browserHead
+                    width: parent.width
+                    height: 38 * root.u
+                    spacing: 8 * root.u
+                    ObscuraButton {
+                        width: 44 * root.u
+                        height: 38 * root.u
+                        pal: root.pal
+                        u: root.u
+                        uiFont: root.uiFont
+                        label: "↑"
+                        dim: !ObscuraStore.browseData.parent
+                        onClicked: ObscuraStore.browse(ObscuraStore.browseData.parent)
+                    }
+                    Rectangle {
+                        width: parent.width - 44 * root.u - 8 * root.u
+                        height: 38 * root.u
+                        radius: 11 * root.u
+                        color: root.pal.surface0
+                        Text {
+                            anchors.fill: parent
+                            anchors.leftMargin: 12 * root.u
+                            anchors.rightMargin: 12 * root.u
+                            verticalAlignment: Text.AlignVCenter
+                            text: ObscuraStore.browseData.path || "…"
+                            elide: Text.ElideLeft
+                            color: root.pal.text
+                            font.family: root.monoFont
+                            font.pixelSize: 12 * root.u
+                        }
+                    }
+                }
+
+                ListView {
+                    id: folderList
+                    anchors.top: browserHead.bottom
+                    anchors.topMargin: 10 * root.u
+                    anchors.bottom: browserFoot.top
+                    anchors.bottomMargin: 10 * root.u
+                    width: parent.width
+                    clip: true
+                    spacing: 4 * root.u
+                    boundsBehavior: Flickable.StopAtBounds
+                    model: ObscuraStore.browseData.dirs || []
+                    delegate: Rectangle {
+                        required property string modelData
+                        width: folderList.width
+                        height: 38 * root.u
+                        radius: 10 * root.u
+                        color: rowArea.containsMouse ? root.pal.surface1 : root.pal.surface0
+                        Behavior on color {
+                            ColorAnimation {
+                                duration: 100
+                            }
+                        }
+                        // A small folder glyph.
+                        Item {
+                            x: 12 * root.u
+                            anchors.verticalCenter: parent.verticalCenter
+                            width: 18 * root.u
+                            height: 14 * root.u
+                            Rectangle {
+                                width: 8 * root.u
+                                height: 4 * root.u
+                                radius: 1.5 * root.u
+                                color: root.pal.overlay1
+                            }
+                            Rectangle {
+                                y: 3 * root.u
+                                width: parent.width
+                                height: 11 * root.u
+                                radius: 3 * root.u
+                                color: "transparent"
+                                border.width: 1.4 * root.u
+                                border.color: root.pal.overlay1
+                            }
+                        }
+                        Text {
+                            anchors.left: parent.left
+                            anchors.leftMargin: 40 * root.u
+                            anchors.right: parent.right
+                            anchors.rightMargin: 12 * root.u
+                            anchors.verticalCenter: parent.verticalCenter
+                            text: modelData
+                            elide: Text.ElideRight
+                            color: root.pal.text
+                            font.family: root.uiFont
+                            font.pixelSize: 13 * root.u
+                        }
+                        MouseArea {
+                            id: rowArea
+                            anchors.fill: parent
+                            hoverEnabled: true
+                            cursorShape: Qt.PointingHandCursor
+                            onClicked: ObscuraStore.enterFolder(modelData)
+                        }
+                    }
+                    Text {
+                        visible: folderList.count === 0
+                        anchors.centerIn: parent
+                        text: ObscuraStore.browseError !== "" ? ObscuraStore.browseError : "Alt klasör yok."
+                        color: ObscuraStore.browseError !== "" ? root.pal.yellow : root.pal.overlay1
+                        font.family: root.uiFont
+                        font.pixelSize: 12.5 * root.u
+                    }
+                }
+
+                Row {
+                    id: browserFoot
+                    anchors.bottom: parent.bottom
+                    width: parent.width
+                    spacing: 8 * root.u
+                    ObscuraButton {
+                        width: (parent.width - 8 * root.u) * 0.4
+                        pal: root.pal
+                        u: root.u
+                        uiFont: root.uiFont
+                        label: "İptal"
+                        onClicked: ObscuraStore.closeBrowser()
+                    }
+                    ObscuraButton {
+                        width: (parent.width - 8 * root.u) * 0.6
+                        pal: root.pal
+                        u: root.u
+                        uiFont: root.uiFont
+                        primary: true
+                        dim: ObscuraStore.browseData.writable === false
+                        label: ObscuraStore.browseData.writable === false ? "Yazılamaz" : "Bu klasörü seç"
+                        onClicked: ObscuraStore.chooseBrowsed()
+                    }
                 }
             }
 

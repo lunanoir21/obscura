@@ -57,6 +57,60 @@ pub fn max_refresh(monitors_json: &str) -> Option<u32> {
         .filter(|hz| *hz > 0)
 }
 
+/// OBS's filename tokens turned into what `strftime` understands, then filled in
+/// for `when`. Anything else in the pattern is passed through as OBS would.
+pub fn expand_filename(pattern: &str, when: chrono::NaiveDateTime) -> Option<String> {
+    use chrono::format::{Item, StrftimeItems};
+    let fmt = pattern
+        .replace("%CCYY", "%Y")
+        .replace("%YY", "%y")
+        .replace("%MM", "%m")
+        .replace("%DD", "%d")
+        .replace("%hh", "%H")
+        .replace("%mm", "%M")
+        .replace("%ss", "%S");
+    if StrftimeItems::new(&fmt).any(|i| matches!(i, Item::Error)) {
+        return None;
+    }
+    Some(when.format(&fmt).to_string())
+}
+
+/// File extension OBS gives a container (`hybrid_mp4` is still `.mp4`).
+fn extension(format: &str) -> &str {
+    match format {
+        "hybrid_mp4" | "fragmented_mp4" | "mp4" => "mp4",
+        "fragmented_mov" | "mov" => "mov",
+        other => other,
+    }
+}
+
+/// Folders inside `path`, for the widget's folder chooser. Hidden ones are left out.
+pub fn browse(path: &str) -> Result<Value> {
+    let expanded = match path.strip_prefix('~') {
+        Some(rest) => format!("{}{rest}", std::env::var("HOME").unwrap_or_default()),
+        None => path.to_owned(),
+    };
+    let dir = std::fs::canonicalize(&expanded)?;
+    if !dir.is_dir() {
+        bail!("not a folder: {}", dir.display());
+    }
+    let mut dirs: Vec<String> = std::fs::read_dir(&dir)?
+        .flatten()
+        .filter(|e| e.path().is_dir())
+        .filter_map(|e| e.file_name().into_string().ok())
+        .filter(|n| !n.starts_with('.'))
+        .collect();
+    dirs.sort_by_key(|n| n.to_lowercase());
+    dirs.truncate(500);
+    let writable = std::fs::metadata(&dir).map(|m| !m.permissions().readonly()).unwrap_or(false);
+    Ok(json!({
+        "path": dir.display().to_string(),
+        "parent": dir.parent().map(|p| p.display().to_string()),
+        "dirs": dirs,
+        "writable": writable,
+    }))
+}
+
 pub fn info(c: &mut Client) -> Result<Value> {
     let status = c.record_status()?;
 
@@ -99,10 +153,23 @@ pub fn info(c: &mut Client) -> Result<Value> {
         .and_then(|v| v["outputActive"].as_bool())
         .unwrap_or(false);
 
+    // What the next file would be called, and whether that name is taken.
+    let overwrite = profile(c, "Output", "OverwriteIfExists").as_deref() == Some("true");
+    let (example, exists) = match (&dir, &filename) {
+        (Some(d), Some(f)) => {
+            let ext = extension(&raw_format);
+            let name = expand_filename(f, chrono::Local::now().naive_local()).map(|n| format!("{n}.{ext}"));
+            let exists = name.as_ref().is_some_and(|n| std::path::Path::new(d).join(n).exists());
+            (name, exists)
+        }
+        _ => (None, false),
+    };
+
     Ok(json!({
         "recording": status.output_active,
         "scenes": scenes, "scene": scene, "inputs": inputs, "video": video,
-        "record": { "dir": dir, "filename": filename, "format": format, "mode": section },
+        "record": { "dir": dir, "filename": filename, "format": format, "mode": section,
+                    "example": example, "exists": exists, "overwrite": overwrite },
         "limits": { "max_fps": max_refresh_hz() },
         "replay": { "enabled": replay_enabled, "active": replay_active, "seconds": replay_secs },
     }))
@@ -199,6 +266,31 @@ pub fn set(c: &mut Client, key: &str, value: &str) -> Result<()> {
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    fn at(y: i32, mo: u32, d: u32, h: u32, mi: u32, sec: u32) -> chrono::NaiveDateTime {
+        chrono::NaiveDate::from_ymd_opt(y, mo, d).unwrap().and_hms_opt(h, mi, sec).unwrap()
+    }
+
+    #[test]
+    fn expands_obs_filename_tokens() {
+        let t = at(2026, 10, 8, 22, 5, 9);
+        assert_eq!(expand_filename("%CCYY-%MM-%DD %hh-%mm-%ss", t).as_deref(), Some("2026-10-08 22-05-09"));
+        assert_eq!(expand_filename("kayit", t).as_deref(), Some("kayit"));
+        assert_eq!(expand_filename("%YY%MM", t).as_deref(), Some("2610"));
+    }
+
+    #[test]
+    fn browse_lists_visible_folders_sorted() {
+        let root = std::env::temp_dir().join(format!("obscura-ls-{}", std::process::id()));
+        for d in ["beta", "Alpha", ".hidden"] {
+            std::fs::create_dir_all(root.join(d)).unwrap();
+        }
+        std::fs::write(root.join("file.txt"), "x").unwrap();
+        let v = browse(root.to_str().unwrap()).unwrap();
+        assert_eq!(v["dirs"], json!(["Alpha", "beta"]));
+        assert!(browse(root.join("file.txt").to_str().unwrap()).is_err());
+        std::fs::remove_dir_all(root).ok();
+    }
 
     #[test]
     fn picks_the_fastest_real_display() {

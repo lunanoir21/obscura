@@ -144,6 +144,57 @@ Singleton {
     // The panel's tab, kept here so it survives closing and reopening.
     property int panelTab: 0
 
+    // ---- folder chooser -----------------------------------------------------------
+    // The folder browser in the Kayıt tab: `obscura ls` lists one folder at a time.
+    property bool browsing: false
+    property var browseData: ({})
+    property string browseError: ""
+
+    function browse(path) {
+        if (browseProc.running)
+            return;
+        browseProc.command = command(["ls", path]);
+        browseProc.running = true;
+    }
+    function openBrowser() {
+        browseError = "";
+        browsing = true;
+        browse(info.record && info.record.dir ? info.record.dir : "~");
+    }
+    function closeBrowser() {
+        browsing = false;
+    }
+    function enterFolder(name) {
+        const base = browseData.path === "/" ? "" : browseData.path;
+        browse(base + "/" + name);
+    }
+    function chooseBrowsed() {
+        if (browseData.path)
+            act(["set", "dir", browseData.path]);
+        browsing = false;
+    }
+
+    Process {
+        id: browseProc
+        stdout: StdioCollector {
+            id: browseOut
+        }
+        stderr: StdioCollector {
+            id: browseErr
+        }
+        onExited: code => {
+            if (code !== 0) {
+                root.browseError = browseErr.text.trim().replace(/^obscura: /, "");
+                return;
+            }
+            try {
+                root.browseData = JSON.parse(browseOut.text);
+                root.browseError = "";
+            } catch (e) {
+            }
+        }
+    }
+
     // ---- widget settings -------------------------------------------------------
     property var cfg: ({})
     readonly property string timerFont: cfg.timer_font || "Space Mono"

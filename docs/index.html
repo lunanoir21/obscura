@@ -6,6 +6,8 @@
 <title>obscura — OBS recording for Quickshell</title>
 <meta name="description" content="A thin control layer for OBS Studio on Hyprland: a quiet button in your bar that grows into a pill while you record, a panel for the details, and a shortcut that works from anywhere.">
 <link rel="icon" href="favicon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="assets/logo-256.png">
+<meta property="og:image" content="assets/logo-512.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Instrument+Sans:wght@400;500;600&family=JetBrains+Mono:wght@400;500&family=Space+Mono&family=Doto:wght@700;900&display=swap" rel="stylesheet">
@@ -15,7 +17,7 @@
 
 <header class="nav">
   <a class="brand" href="#top" aria-label="obscura">
-    <svg width="22" height="22" viewBox="0 0 22 22" aria-hidden="true"><circle cx="11" cy="11" r="8" fill="none" stroke="currentColor" stroke-width="1.6"/><circle cx="11" cy="11" r="3" class="dot"/></svg>
+    <svg width="24" height="24" viewBox="0 0 100 100" aria-hidden="true" fill="none"><circle cx="50" cy="50" r="38" stroke="currentColor" stroke-width="6"/><polygon points="50,34 63.9,42 63.9,58 50,66 36.1,58 36.1,42" stroke="currentColor" stroke-width="6" stroke-linejoin="round"/><path d="M50 12v22M83 31l-19 11M83 69 64 58M50 88V66M17 69l19-11M17 31l19 11" stroke="currentColor" stroke-width="4" stroke-linecap="round" opacity=".6"/><circle cx="50" cy="50" r="5.5" class="dot"/></svg>
     <span>obscura</span>
   </a>
   <nav aria-label="Sections">
@@ -35,11 +37,7 @@
 
 <!-- ───────── hero ───────── -->
 <section class="hero">
-  <svg class="obscura-ring" viewBox="0 0 600 600" aria-hidden="true">
-    <circle cx="300" cy="300" r="290" fill="none" stroke="currentColor" stroke-width="1"/>
-    <circle cx="300" cy="300" r="214" fill="none" stroke="currentColor" stroke-width="1"/>
-    <circle cx="300" cy="300" r="12" class="dot"/>
-  </svg>
+  <svg class="obscura-ring" viewBox="0 0 100 100" aria-hidden="true" fill="none"><circle cx="50" cy="50" r="38" stroke="currentColor" stroke-width="0.5"/><polygon points="50,34 63.9,42 63.9,58 50,66 36.1,58 36.1,42" stroke="currentColor" stroke-width="0.5" stroke-linejoin="round"/><path d="M50 12v22M83 31l-19 11M83 69 64 58M50 88V66M17 69l19-11M17 31l19 11" stroke="currentColor" stroke-width="0.4" stroke-linecap="round"/><circle cx="50" cy="50" r="1.1" class="dot"/></svg>
   <p class="eyebrow" data-i18n="hero.eyebrow">for OBS Studio · Quickshell · Hyprland</p>
   <h1><span data-i18n="hero.h1a">Recording is</span><br><em data-i18n="hero.h1b">one quiet button.</em></h1>
   <p class="lede" data-i18n="hero.lede">A small circle in your bar that opens into a pill while you record, a panel for the details, and a shortcut that works from anywhere. OBS keeps doing the recording; obscura only holds the remote.</p>

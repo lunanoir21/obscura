@@ -1,6 +1,6 @@
 use anyhow::{Result, bail};
 use clap::{Parser, Subcommand};
-use obscura_core::{Client, Connection, client::events};
+use obscura_core::{Client, Connection, client::events, control};
 use serde_json::json;
 
 #[derive(Parser)]
@@ -24,8 +24,33 @@ enum Cmd {
     Pause,
     /// Print state changes as JSON lines until killed (used by the bar widget)
     Watch,
+    /// Scenes, audio inputs, video and recording settings as JSON
+    Info,
+    /// Switch the current scene
+    Scene { name: String },
+    /// Toggle mute on an audio input
+    Mute { input: String },
+    /// Replay buffer: start, stop or save
+    Replay { action: String },
+    /// Save a PNG of the current scene and print its path
+    Shot,
+    /// Change a recording setting: fps, resolution, dir, filename, format, replay-seconds
+    Set { key: String, value: String },
+    /// obscura's own widget settings
+    Config {
+        #[command(subcommand)]
+        action: ConfigCmd,
+    },
     /// Check that OBS and its WebSocket server are reachable
     Doctor,
+}
+
+#[derive(Subcommand)]
+enum ConfigCmd {
+    /// Print the settings as JSON
+    Get,
+    /// Change one: timer_font, timer_size, button_style
+    Set { key: String, value: String },
 }
 
 fn main() {
@@ -40,6 +65,13 @@ fn run() -> Result<()> {
     let conn = Connection::discover();
     if matches!(cli.cmd, Cmd::Doctor) {
         return doctor(&conn);
+    }
+    if let Cmd::Config { action } = &cli.cmd {
+        match action {
+            ConfigCmd::Get => println!("{}", obscura_core::uiconfig::get()),
+            ConfigCmd::Set { key, value } => obscura_core::uiconfig::set(key, value)?,
+        }
+        return Ok(());
     }
     if matches!(cli.cmd, Cmd::Watch) {
         return watch(&conn);
@@ -78,6 +110,13 @@ fn run() -> Result<()> {
             }
         }
         Cmd::Pause => c.toggle_pause()?,
+        Cmd::Info => println!("{}", control::info(&mut c)?),
+        Cmd::Scene { name } => control::set_scene(&mut c, &name)?,
+        Cmd::Mute { input } => control::toggle_mute(&mut c, &input)?,
+        Cmd::Replay { action } => control::replay(&mut c, &action)?,
+        Cmd::Shot => println!("{}", json!({ "path": control::screenshot(&mut c)? })),
+        Cmd::Set { key, value } => control::set(&mut c, &key, &value)?,
+        Cmd::Config { .. } => unreachable!(),
         Cmd::Doctor | Cmd::Watch => unreachable!(),
     }
     Ok(())

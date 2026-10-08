@@ -23,6 +23,8 @@ pub mod events {
     pub const NONE: u32 = 0;
     pub const GENERAL: u32 = 1 << 0;
     pub const OUTPUTS: u32 = 1 << 6;
+    /// High-volume (~50 per second); subscribe only while something shows it.
+    pub const INPUT_VOLUME_METERS: u32 = 1 << 16;
 }
 
 const CONNECT_TIMEOUT: Duration = Duration::from_millis(800);

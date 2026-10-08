@@ -51,6 +51,8 @@ enum Cmd {
         #[arg(value_parser = ["install", "uninstall"])]
         action: String,
     },
+    /// Print audio input levels as JSON lines until killed (used by the panel)
+    Meters,
     /// Check that OBS and its WebSocket server are reachable
     Doctor,
 }
@@ -94,6 +96,9 @@ fn run() -> Result<()> {
             ConfigCmd::Set { key, value } => obscura_core::uiconfig::set(key, value)?,
         }
         return Ok(());
+    }
+    if matches!(cli.cmd, Cmd::Meters) {
+        return meters(&conn);
     }
     if matches!(cli.cmd, Cmd::Watch) {
         return watch(&conn);
@@ -146,7 +151,7 @@ fn run() -> Result<()> {
             println!("{}", c.request(&kind, data)?);
         }
         Cmd::Config { .. } => unreachable!(),
-        Cmd::Doctor | Cmd::Watch | Cmd::Picker | Cmd::PickerSetup { .. } => unreachable!(),
+        Cmd::Doctor | Cmd::Watch | Cmd::Meters | Cmd::Picker | Cmd::PickerSetup { .. } => unreachable!(),
     }
     Ok(())
 }
@@ -172,6 +177,14 @@ fn doctor(conn: &Connection) -> Result<()> {
 fn watch(conn: &Connection) -> Result<()> {
     use std::io::Write;
     obscura_core::watch::run(conn, |state| {
+        if let Some(path) = state.and_then(|s| s.saved.as_deref()) {
+            let cfg = obscura_core::uiconfig::get();
+            obscura_core::hooks::on_saved(
+                path,
+                cfg["notify_saved"].as_bool().unwrap_or(true),
+                cfg["copy_path"].as_bool().unwrap_or(false),
+            );
+        }
         let mut out = std::io::stdout().lock();
         // A closed pipe means the widget is gone: stop instead of lingering.
         state.map_or(true, |s| serde_json::to_writer(&mut out, s).is_ok())
@@ -197,4 +210,15 @@ fn picker() -> Result<()> {
             bail!("cannot run hyprland-share-picker: {err}")
         }
     }
+}
+
+fn meters(conn: &Connection) -> Result<()> {
+    use std::io::Write;
+    obscura_core::meters::run(conn, |levels| {
+        let mut out = std::io::stdout().lock();
+        levels.map_or(true, |l| serde_json::to_writer(&mut out, l).is_ok())
+            && out.write_all(b"\n").is_ok()
+            && out.flush().is_ok()
+    });
+    Ok(())
 }

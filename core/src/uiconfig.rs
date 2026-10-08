@@ -15,7 +15,8 @@ fn path() -> Option<PathBuf> {
 }
 
 fn defaults() -> Map<String, Value> {
-    let v = json!({ "timer_font": "Space Mono", "timer_size": 18, "button_style": "circle" });
+    let v = json!({ "timer_font": "Space Mono", "timer_size": 18, "button_style": "circle",
+        "notify_saved": true, "copy_path": false });
     v.as_object().cloned().unwrap_or_default()
 }
 
@@ -52,6 +53,11 @@ fn validate(key: &str, value: &str) -> Result<Value> {
             }
             json!(value)
         }
+        "notify_saved" | "copy_path" => match value {
+            "true" => json!(true),
+            "false" => json!(false),
+            _ => bail!("{key}: true or false"),
+        },
         other => bail!("unknown key: {other}"),
     })
 }

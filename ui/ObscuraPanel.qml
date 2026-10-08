@@ -19,7 +19,7 @@ Item {
 
     property bool shown: false
     property bool anim: false
-    property int tab: 0
+    readonly property int tab: ObscuraStore.panelTab
 
     readonly property var info: ObscuraStore.info
     readonly property var video: info.video || ({})
@@ -45,6 +45,8 @@ Item {
         openChanged()
 
     onOpenChanged: {
+        animating = true;
+        animTimer.restart();
         if (open) {
             shown = true;
             openTimer.restart();
@@ -66,6 +68,18 @@ Item {
         interval: 320
         onTriggered: if (!root.open)
             root.shown = false
+    }
+
+    readonly property real chrome: tabs.y + tabs.height + 36 * u
+    readonly property real maxCardHeight: Math.max(c0.height, c1.height, c2.height) + chrome
+
+    // True while the card scales in or out: it is then drawn once into a
+    // texture instead of being re-rendered, text and all, every frame.
+    property bool animating: false
+    Timer {
+        id: animTimer
+        interval: 460
+        onTriggered: root.animating = false
     }
 
     component Cap: Text {
@@ -106,20 +120,28 @@ Item {
         anchor.rect: Qt.rect(root.anchorItem ? root.anchorItem.width + pad : 0, root.anchorItem ? root.anchorItem.height + 8 * root.u - pad : 0, 1, 1)
         anchor.edges: Edges.Top | Edges.Left
         anchor.gravity: Edges.Bottom | Edges.Left
+        // The window is as tall as the tallest tab and never resizes while the
+        // card animates inside it; a window resize per frame is what made the
+        // panel stutter. Clicks outside the card pass through.
         implicitWidth: card.width + 2 * pad
-        implicitHeight: card.height + 2 * pad
+        implicitHeight: root.maxCardHeight + 2 * pad
+        mask: Region {
+            item: card
+        }
 
         Rectangle {
             id: card
             x: popup.pad
             y: popup.pad + (root.anim ? 0 : -8 * root.u)
             width: 400 * root.u
-            height: (root.tab === 0 ? c0.height : root.tab === 1 ? c1.height : c2.height) + tabs.y + tabs.height + 36 * root.u
+            height: (root.tab === 0 ? c0.height : root.tab === 1 ? c1.height : c2.height) + root.chrome
             radius: 22 * root.u
             color: root.pal.mantle
             border.width: 1
             border.color: root.pal.surface1
             clip: true
+            layer.enabled: root.animating
+            layer.smooth: true
             transformOrigin: Item.TopRight
             scale: root.anim ? 1 : 0.88
             opacity: root.anim ? 1 : 0
@@ -191,7 +213,7 @@ Item {
                         MouseArea {
                             anchors.fill: parent
                             cursorShape: Qt.PointingHandCursor
-                            onClicked: root.tab = index
+                            onClicked: ObscuraStore.panelTab = index
                         }
                     }
                 }

@@ -86,6 +86,7 @@ Singleton {
     // What `obscura info` last said: scenes, audio inputs, video, recording
     // settings, replay buffer. Empty until the panel has been opened once.
     property var info: ({})
+    property string infoText: ""
     property string error: ""
     readonly property bool hasInfo: info.scenes !== undefined
 
@@ -139,6 +140,9 @@ Singleton {
             }
         }
     }
+
+    // The panel's tab, kept here so it survives closing and reopening.
+    property int panelTab: 0
 
     // ---- widget settings -------------------------------------------------------
     property var cfg: ({})
@@ -229,8 +233,13 @@ Singleton {
         stdout: StdioCollector {
             id: infoOut
             onStreamFinished: {
+                // Same answer as last time: change nothing, so the panel's
+                // lists are not torn down and rebuilt.
+                if (infoOut.text === root.infoText)
+                    return;
                 try {
                     root.info = JSON.parse(infoOut.text);
+                    root.infoText = infoOut.text;
                 } catch (e) {
                 }
             }

@@ -8,7 +8,7 @@ obscura, zaten kurulu olan OBS'i yerleşik WebSocket sunucusu (obs-websocket v5)
 
 *English: [README.md](README.md)*
 
-<p align="center"><img src="docs/cover.png" width="900" alt="obscura: kayıt sırasında çubuk hapı ve paneli"></p>
+<p align="center"><picture><source media="(prefers-color-scheme: light)" srcset="docs/cover-light.png"><img src="docs/cover.png" width="900" alt="obscura: kayıt sırasında çubuk hapı ve paneli"></picture></p>
 
 > Durum: erken ama kullanılabilir. Hyprland, OBS Studio 32 ve Quickshell 0.3 üzerinde derlenip denendi; diğer kurulumlar denenmedi.
 
@@ -23,14 +23,14 @@ obscura, zaten kurulu olan OBS'i yerleşik WebSocket sunucusu (obs-websocket v5)
 
 ## Ekran görüntüleri
 
-Widget'ın kendi koduyla, siyah zeminde, uydurma bir dünyada çizildi (`tools/shots/shots.sh`); gerçek bir masaüstünden hiçbir şey göstermezler.
+Widget'ın kendi koduyla, siyah zeminde, uydurma bir dünyada çizildi (`tools/shots/shots.sh`); gerçek bir masaüstünden hiçbir şey göstermezler. Açık temadaki okuyucular açık sürümleri görür.
 
 | | |
 |---|---|
-| <img src="docs/screenshots/bar-recording.png" alt="Kayıtta"> | <img src="docs/screenshots/bar-saved.png" alt="Kaydedildi"> |
-| <img src="docs/screenshots/panel-control.png" alt="Panel: kontrol"> | <img src="docs/screenshots/panel-record.png" alt="Panel: kayıt ayarları"> |
-| <img src="docs/screenshots/panel-folder.png" alt="Panel: klasör seçici"> | <img src="docs/screenshots/panel-look.png" alt="Panel: görünüm"> |
-| <img src="docs/screenshots/picker-screens.png" alt="Ekran paylaşımı seçici: ekranlar"> | <img src="docs/screenshots/picker-windows.png" alt="Ekran paylaşımı seçici: pencereler"> |
+| <picture><source media="(prefers-color-scheme: light)" srcset="docs/screenshots/light/bar-recording.png"><img src="docs/screenshots/bar-recording.png" alt="Kayıtta"></picture> | <picture><source media="(prefers-color-scheme: light)" srcset="docs/screenshots/light/bar-saved.png"><img src="docs/screenshots/bar-saved.png" alt="Kaydedildi"></picture> |
+| <picture><source media="(prefers-color-scheme: light)" srcset="docs/screenshots/light/panel-control.png"><img src="docs/screenshots/panel-control.png" alt="Panel: kontrol"></picture> | <picture><source media="(prefers-color-scheme: light)" srcset="docs/screenshots/light/panel-record.png"><img src="docs/screenshots/panel-record.png" alt="Panel: kayıt ayarları"></picture> |
+| <picture><source media="(prefers-color-scheme: light)" srcset="docs/screenshots/light/panel-folder.png"><img src="docs/screenshots/panel-folder.png" alt="Panel: klasör seçici"></picture> | <picture><source media="(prefers-color-scheme: light)" srcset="docs/screenshots/light/panel-look.png"><img src="docs/screenshots/panel-look.png" alt="Panel: görünüm"></picture> |
+| <picture><source media="(prefers-color-scheme: light)" srcset="docs/screenshots/light/picker-screens.png"><img src="docs/screenshots/picker-screens.png" alt="Ekran paylaşımı seçici: ekranlar"></picture> | <picture><source media="(prefers-color-scheme: light)" srcset="docs/screenshots/light/picker-windows.png"><img src="docs/screenshots/picker-windows.png" alt="Ekran paylaşımı seçici: pencereler"></picture> |
 
 ## Tasarım hedefleri
 

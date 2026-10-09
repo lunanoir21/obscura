@@ -8,7 +8,7 @@ obscura drives the OBS you already have through its built-in WebSocket server (o
 
 *Türkçe: [README.tr.md](README.tr.md)*
 
-<p align="center"><img src="docs/cover.png" width="900" alt="obscura: the bar pill while recording, and its panel"></p>
+<p align="center"><picture><source media="(prefers-color-scheme: light)" srcset="docs/cover-light.png"><img src="docs/cover.png" width="900" alt="obscura: the bar pill while recording, and its panel"></picture></p>
 
 > Status: early, usable. Built and tested on Hyprland with OBS Studio 32 and Quickshell 0.3; other setups are untested.
 
@@ -23,14 +23,14 @@ obscura drives the OBS you already have through its built-in WebSocket server (o
 
 ## Screenshots
 
-Drawn by the widget's own code in a made-up world on black (`tools/shots/shots.sh`), so they show nothing from a real desktop.
+Drawn by the widget's own code in a made-up world on black (`tools/shots/shots.sh`), so they show nothing from a real desktop. Light-theme readers get the light versions.
 
 | | |
 |---|---|
-| <img src="docs/screenshots/bar-recording.png" alt="Recording"> | <img src="docs/screenshots/bar-saved.png" alt="Saved"> |
-| <img src="docs/screenshots/panel-control.png" alt="Panel: control"> | <img src="docs/screenshots/panel-record.png" alt="Panel: recording settings"> |
-| <img src="docs/screenshots/panel-folder.png" alt="Panel: folder chooser"> | <img src="docs/screenshots/panel-look.png" alt="Panel: look"> |
-| <img src="docs/screenshots/picker-screens.png" alt="Screen-share picker: screens"> | <img src="docs/screenshots/picker-windows.png" alt="Screen-share picker: windows"> |
+| <picture><source media="(prefers-color-scheme: light)" srcset="docs/screenshots/light/bar-recording.png"><img src="docs/screenshots/bar-recording.png" alt="Recording"></picture> | <picture><source media="(prefers-color-scheme: light)" srcset="docs/screenshots/light/bar-saved.png"><img src="docs/screenshots/bar-saved.png" alt="Saved"></picture> |
+| <picture><source media="(prefers-color-scheme: light)" srcset="docs/screenshots/light/panel-control.png"><img src="docs/screenshots/panel-control.png" alt="Panel: control"></picture> | <picture><source media="(prefers-color-scheme: light)" srcset="docs/screenshots/light/panel-record.png"><img src="docs/screenshots/panel-record.png" alt="Panel: recording settings"></picture> |
+| <picture><source media="(prefers-color-scheme: light)" srcset="docs/screenshots/light/panel-folder.png"><img src="docs/screenshots/panel-folder.png" alt="Panel: folder chooser"></picture> | <picture><source media="(prefers-color-scheme: light)" srcset="docs/screenshots/light/panel-look.png"><img src="docs/screenshots/panel-look.png" alt="Panel: look"></picture> |
+| <picture><source media="(prefers-color-scheme: light)" srcset="docs/screenshots/light/picker-screens.png"><img src="docs/screenshots/picker-screens.png" alt="Screen-share picker: screens"></picture> | <picture><source media="(prefers-color-scheme: light)" srcset="docs/screenshots/light/picker-windows.png"><img src="docs/screenshots/picker-windows.png" alt="Screen-share picker: windows"></picture> |
 
 ## Design goals
 

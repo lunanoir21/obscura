@@ -12,23 +12,26 @@ ShellRoot {
     readonly property string out: Quickshell.env("OUT")
     property int step: -1
 
+    readonly property bool light: Quickshell.env("THEME") === "white"
+    readonly property color bg: light ? "#ffffff" : "#000000"
+
     QtObject {
         id: pal
-        property color crust: "#080808"
-        property color mantle: "#101010"
-        property color base: "#0e0e0e"
-        property color surface0: "#1a1a1a"
-        property color surface1: "#262626"
-        property color surface2: "#343434"
-        property color overlay0: "#6e6e6e"
-        property color overlay1: "#8c8c8c"
-        property color overlay2: "#a8a8a8"
-        property color subtext0: "#949494"
-        property color subtext1: "#bdbdbd"
-        property color text: "#eaeaea"
-        property color red: "#f08a82"
-        property color green: "#9dd6a4"
-        property color yellow: "#e3cd92"
+        property color crust: root.light ? "#e4e4e8" : "#080808"
+        property color mantle: root.light ? "#f7f7f8" : "#101010"
+        property color base: root.light ? "#eeeef1" : "#0e0e0e"
+        property color surface0: root.light ? "#ececef" : "#1a1a1a"
+        property color surface1: root.light ? "#dcdce0" : "#262626"
+        property color surface2: root.light ? "#c9c9cf" : "#343434"
+        property color overlay0: root.light ? "#8a8a92" : "#6e6e6e"
+        property color overlay1: root.light ? "#6a6a72" : "#8c8c8c"
+        property color overlay2: root.light ? "#55555c" : "#a8a8a8"
+        property color subtext0: root.light ? "#4a4a50" : "#949494"
+        property color subtext1: root.light ? "#38383d" : "#bdbdbd"
+        property color text: root.light ? "#111113" : "#eaeaea"
+        property color red: root.light ? "#d4574c" : "#f08a82"
+        property color green: root.light ? "#3f8f56" : "#9dd6a4"
+        property color yellow: root.light ? "#a87a14" : "#e3cd92"
     }
 
     FontLoader {
@@ -156,10 +159,10 @@ ShellRoot {
     FloatingWindow {
         implicitWidth: 560
         implicitHeight: 140
-        color: "#000000"
+        color: root.bg
         Rectangle {
             id: barShot
-            color: "#000000"
+            color: root.bg
             width: 560
             height: 140
             Row {
@@ -179,10 +182,10 @@ ShellRoot {
     FloatingWindow {
         implicitWidth: 480
         implicitHeight: 760
-        color: "#000000"
+        color: root.bg
         Rectangle {
             id: panelShot
-            color: "#000000"
+            color: root.bg
             width: 480
             height: card.height + 80
             O.ObscuraPanelCard {
@@ -200,10 +203,10 @@ ShellRoot {
     FloatingWindow {
         implicitWidth: 760
         implicitHeight: 800
-        color: "#000000"
+        color: root.bg
         Rectangle {
             id: pickerShot
-            color: "#000000"
+            color: root.bg
             width: 760
             height: 800
             O.ObscuraPickerCard {

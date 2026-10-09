@@ -13,7 +13,17 @@
   $("#theme").addEventListener("click", () => {
     root.dataset.theme = root.dataset.theme === "dark" ? "light" : "dark";
     store.set("obscura-theme", root.dataset.theme);
+    shotsFor(root.dataset.theme);
   });
+
+  /* ── screenshots follow the theme ── */
+  function shotsFor(theme) {
+    $$("img[data-light]").forEach(img => {
+      if (!img.dataset.dark) img.dataset.dark = img.getAttribute("src");
+      img.src = theme === "light" ? img.dataset.light : img.dataset.dark;
+    });
+  }
+  shotsFor(root.dataset.theme);
 
   /* ── language ── */
   const TR = {

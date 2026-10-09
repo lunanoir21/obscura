@@ -16,7 +16,7 @@ fn path() -> Option<PathBuf> {
 
 fn defaults() -> Map<String, Value> {
     let v = json!({ "timer_font": "Space Mono", "timer_size": 18, "button_style": "circle",
-        "notify_saved": true, "copy_path": false, "obs_port": 0 });
+        "notify_saved": true, "copy_path": false, "obs_port": 0, "language": "auto" });
     v.as_object().cloned().unwrap_or_default()
 }
 
@@ -53,6 +53,12 @@ fn validate(key: &str, value: &str) -> Result<Value> {
             }
             json!(value)
         }
+        "language" => {
+            if !["auto", "en", "tr"].contains(&value) {
+                bail!("language: auto, en or tr");
+            }
+            json!(value)
+        }
         "obs_port" => {
             let n: u32 = value.parse().ok().filter(|n| *n <= 65535).ok_or_else(|| anyhow::anyhow!("obs_port must be 0-65535 (0 = use OBS's own setting)"))?;
             json!(n)
@@ -64,6 +70,19 @@ fn validate(key: &str, value: &str) -> Result<Value> {
         },
         other => bail!("unknown key: {other}"),
     })
+}
+
+/// "tr" or "en": the `language` setting, with "auto" following the system (LC_ALL, LC_MESSAGES, LANG).
+pub fn lang() -> &'static str {
+    let setting = get()["language"].as_str().unwrap_or("auto").to_owned();
+    match setting.as_str() {
+        "tr" => "tr",
+        "en" => "en",
+        _ => {
+            let env = ["LC_ALL", "LC_MESSAGES", "LANG"].iter().find_map(|k| std::env::var(k).ok().filter(|v| !v.is_empty())).unwrap_or_default();
+            if env.to_lowercase().starts_with("tr") { "tr" } else { "en" }
+        }
+    }
 }
 
 pub fn set(key: &str, value: &str) -> Result<()> {
@@ -91,6 +110,8 @@ mod tests {
         assert!(validate("timer_size", "24").is_ok());
         assert!(validate("button_style", "blob").is_err());
         assert!(validate("nope", "1").is_err());
+        assert!(validate("language", "tr").is_ok());
+        assert!(validate("language", "de").is_err());
         assert!(validate("obs_port", "4466").is_ok());
         assert!(validate("obs_port", "0").is_ok());
         assert!(validate("obs_port", "70000").is_err());

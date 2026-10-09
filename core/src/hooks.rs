@@ -47,7 +47,8 @@ pub fn on_saved(path: &str, notify: bool, copy_path: bool) {
     let name = Path::new(path).file_name().map(|n| n.to_string_lossy().into_owned()).unwrap_or_default();
     if notify {
         let mut c = Command::new("notify-send");
-        c.args(["-a", "obscura", "-i", "media-record", "Kayıt kaydedildi", &name]);
+        let title = if crate::uiconfig::lang() == "tr" { "Kayıt kaydedildi" } else { "Recording saved" };
+        c.args(["-a", "obscura", "-i", "media-record", title, &name]);
         spawn(c);
     }
     if copy_path {

@@ -1,0 +1,8 @@
+#!/bin/sh
+# A stand-in for the obscura binary, so the screenshot harness never talks to a real OBS.
+# The harness sets every value it draws directly; this only has to stay quiet and alive.
+case "$1" in
+  watch|meters) while :; do sleep 3600; done ;;
+  config) [ "$2" = get ] && echo '{"timer_font":"Space Mono","timer_size":18,"button_style":"circle","notify_saved":true,"copy_path":false,"obs_port":0}' ;;
+  *) : ;;
+esac

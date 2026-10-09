@@ -1,0 +1,10 @@
+[
+ ["goto", 900, 420],
+ ["wait", 1.0],
+ ["glide", 362, 13, 1.1], ["wait", 0.35], ["mark", "tools"], ["click"], ["wait", 1.3],
+ ["glide", 436, 188, 0.9], ["wait", 0.35], ["mark", "ws_item"], ["click"],
+ ["place", "WebSocket", 302, 60], ["mark", "dialog"], ["wait", 1.7],
+ ["glide", 486, 114, 1.0], ["wait", 0.3], ["mark", "enable"], ["click"], ["wait", 1.4],
+ ["glide", 486, 289, 1.1], ["wait", 0.3], ["mark", "auth"], ["click"], ["wait", 1.8],
+ ["glide", 734, 631, 1.0], ["wait", 0.3], ["mark", "ok"], ["click"], ["wait", 1.6]
+]

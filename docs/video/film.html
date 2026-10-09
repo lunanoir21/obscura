@@ -106,30 +106,8 @@ body{font:400 16px 'Instrument Sans',system-ui,sans-serif;color:#ededed}
   <p id="t0b">Five steps, about five minutes.</p>
 </div>
 
-<!-- A OBS -->
-<div id="sA" class="scene">
-  <div id="obs" class="win">
-    <div class="bar"><span style="width:12px;height:12px;border-radius:50%;background:#333;display:block"></span> OBS Studio</div>
-    <div id="obsbody">
-      <div class="menubar" id="mb"><span>File</span><span>Edit</span><span>View</span><span>Docks</span><span>Profile</span><span>Scene Collection</span><span id="mTools">Tools</span><span>Help</span></div>
-      <div class="preview">preview</div>
-      <div class="docks"><div class="dock">Scenes</div><div class="dock">Sources</div><div class="dock">Audio Mixer</div><div class="dock">Controls</div></div>
-      <div class="dd" id="dd" style="display:none">
-        <div>Auto Scene Switcher</div><div>Output Timer</div><div>Scripts</div><div id="ddWs">WebSocket Server Settings</div>
-      </div>
-      <div id="dlg" style="display:none">
-        <div class="t">WebSocket Server Settings</div>
-        <div class="b">
-          <div class="chk"><div class="box" id="chkEnable"></div><span>Enable WebSocket server</span></div>
-          <div class="fld"><label>Server Port</label><div class="in">4455</div></div>
-          <div class="chk"><div class="box on">✓</div><span>Enable Authentication</span></div>
-          <div class="fld"><label>Server Password</label><div class="in">••••••••••••</div></div>
-        </div>
-        <div class="btns"><div class="btn">Cancel</div><div class="btn ok" id="dlgOk">OK</div></div>
-      </div>
-    </div>
-  </div>
-</div>
+<!-- A OBS: real footage of OBS Studio, recorded on a private display -->
+<div id="sA" class="scene"><img id="obsimg" alt="" style="position:absolute;left:0;top:0;width:1280px;height:720px"></div>
 
 <!-- B terminal -->
 <div id="sB" class="scene">
@@ -175,8 +153,6 @@ body{font:400 16px 'Instrument Sans',system-ui,sans-serif;color:#ededed}
 </div>
 
 <div id="cap"><div class="main" id="capMain"></div><div class="sub" id="capSub"></div></div>
-<div id="ripple"></div>
-<svg id="cursor" viewBox="0 0 26 26"><path d="M4 2l17 10-7.5 1.8L9.6 21z" fill="#fff" stroke="#000" stroke-width="1.4" stroke-linejoin="round"/></svg>
 </div>
 
 <script>
@@ -186,7 +162,7 @@ const L = {
     t0a:'Install obscura', t0b:'Five steps, about five minutes.',
     c1:'1 · Turn on OBS’s WebSocket server', c2:'2 · Build it and check the connection',
     c3:'3 · Put the pill in your bar', c4:'4 · Bind a key', c5:'5 · Record from anywhere',
-    a1:'OBS → Tools → WebSocket Server Settings', a2:'Switch it on. obscura reads the port and password from here.', a3:'Nothing to copy. Press OK.',
+    a1:'OBS → Tools → WebSocket Server Settings', a2:'Tick “Enable WebSocket server”. Port 4455 stays.', a3:'OBS wants a password to exist first: Generate Password.', a4:'Now untick “Enable Authentication”: obscura needs none.', a5:'OK. That’s all OBS needs.',
     b1:'Clone and build with cargo', b2:'Put it on your PATH', b3:'doctor: “connection ok” means obscura can reach OBS',
     cc1:'Your Quickshell config: import the module, add the pill', cc2:'Once in Shell.qml, for the screen-share picker (optional)',
     d1:'Your Hyprland config (hyprland.conf)', d2:'Saved. Hyprland picks it up on its own.',
@@ -197,7 +173,7 @@ const L = {
     t0a:'obscura kurulumu', t0b:'Beş adım, yaklaşık beş dakika.',
     c1:'1 · OBS’in WebSocket sunucusunu aç', c2:'2 · Derle ve bağlantıyı denetle',
     c3:'3 · Hapı çubuğuna yerleştir', c4:'4 · Bir tuşa bağla', c5:'5 · Her yerden kaydet',
-    a1:'OBS → Tools → WebSocket Server Settings', a2:'Aç. obscura port ve parolayı buradan okur.', a3:'Kopyalanacak bir şey yok. OK’e bas.',
+    a1:'OBS → Araçlar → WebSocket Suncusu Ayarları', a2:'“WebSocket sunucuyu etkinleştir”i işaretle. Port 4455 kalsın.', a3:'OBS önce bir parola ister: Parola oluştur.', a4:'Şimdi “Kimlik Doğrulamasını Etkinleştir”i kapat: obscura’nın parolaya ihtiyacı kalmaz.', a5:'Tamam. OBS tarafı bu kadar.',
     b1:'cargo ile klonla ve derle', b2:'PATH’ine koy', b3:'doctor: “connection ok”, obscura’nın OBS’e ulaştığı demek',
     cc1:'Quickshell yapılandırman: modülü içe aktar, hapı ekle', cc2:'Shell.qml’de bir kez, ekran paylaşımı seçici için (isteğe bağlı)',
     d1:'Hyprland yapılandırman (hyprland.conf)', d2:'Kaydedildi. Hyprland kendiliğinden yükler.',
@@ -216,54 +192,29 @@ const twoD = n => String(n).padStart(2, '0');
 const fmt = s => twoD(Math.floor(s / 60)) + ':' + twoD(Math.floor(s) % 60);
 
 /* ---- timeline ---- */
-const SC = [
-  ['s0', 0, 3.6], ['sA', 3.6, 17.2], ['sB', 17.2, 31.4], ['sC', 31.4, 44.6], ['sD', 44.6, 53.4], ['sE', 53.4, 63.2], ['sZ', 63.2, 68]
-];
-const DUR = SC[SC.length - 1][2];
+const LEN = { s0: 3.6, sA: 19.6, sB: 14.2, sC: 13.2, sD: 8.8, sE: 9.8, sZ: 4.8 };
+let acc = 0;
+const SC = Object.entries(LEN).map(([id, l]) => { const a = acc; acc += l; return [id, a, acc]; });
+const START = Object.fromEntries(SC.map(r => [r[0], r[1]]));
+const END = Object.fromEntries(SC.map(r => [r[0], r[2]]));
+const DUR = acc;
+const rel = (id, a, b, text) => [START[id] + a, START[id] + b, text];
 
-/* captions: [from, to, main, sub] by global time */
 const CAPS = [
-  [3.6, 17.2, L.c1, null], [17.2, 31.4, L.c2, null], [31.4, 44.6, L.c3, null], [44.6, 53.4, L.c4, null], [53.4, 63.2, L.c5, null]
+  [START.sA, END.sA, L.c1], [START.sB, END.sB, L.c2], [START.sC, END.sC, L.c3], [START.sD, END.sD, L.c4], [START.sE, END.sE, L.c5]
 ];
 const SUBS = [
-  [4.0, 8.2, L.a1], [8.4, 13.4, L.a2], [13.8, 17.0, L.a3],
-  [17.8, 23.6, L.b1], [23.6, 26.6, L.b2], [27.2, 31.2, L.b3],
-  [32.0, 38.4, L.cc1], [39.0, 44.4, L.cc2],
-  [45.0, 49.6, L.d1], [50.4, 53.2, L.d2],
-  [54.2, 58.4, L.e1], [58.6, 63.0, L.e2]
+  rel('sA', 0.5, 5.3, L.a1), rel('sA', 6.2, 10.8, L.a2), rel('sA', 11.0, 14.4, L.a3), rel('sA', 14.8, 17.6, L.a4), rel('sA', 18.0, 19.5, L.a5),
+  rel('sB', 0.6, 6.4, L.b1), rel('sB', 6.4, 9.4, L.b2), rel('sB', 10.0, 14.0, L.b3),
+  rel('sC', 0.6, 7.0, L.cc1), rel('sC', 7.6, 13.0, L.cc2),
+  rel('sD', 0.4, 5.0, L.d1), rel('sD', 5.8, 8.6, L.d2),
+  rel('sE', 0.8, 5.0, L.e1), rel('sE', 5.2, 9.6, L.e2)
 ];
 
-/* ---- cursor ---- */
-function center(sel) { const r = $(sel).getBoundingClientRect(); return [r.left + r.width / 2, r.top + r.height / 2]; }
-let WP = null;
-function buildPath() {
-  // [time, x, y, click?]; computed once from the real layout. The menu and the
-  // dialog are hidden until their moment, so show them while measuring.
-  const sA = $('#sA'), dd = $('#dd'), dlg = $('#dlg'), keep = [sA.style.visibility, dd.style.display, dlg.style.display];
-  sA.style.visibility = 'visible'; dd.style.display = 'block'; dlg.style.display = 'block';
-  dd.style.left = $('#mTools').offsetLeft + 'px'; dd.style.top = '34px';
-  const mt = center('#mTools'), ws = center('#ddWs'), en = center('#chkEnable'), ok = center('#dlgOk');
-  sA.style.visibility = keep[0]; dd.style.display = keep[1]; dlg.style.display = keep[2];
-  const ddWsPos = [ws[0] - 40, ws[1]];
-  WP = [
-    [3.6, 760, 520, 0], [5.0, mt[0], mt[1] + 4, 0], [5.6, mt[0], mt[1] + 4, 1],
-    [7.0, ddWsPos[0], ddWsPos[1], 0], [7.7, ddWsPos[0], ddWsPos[1], 1],
-    [9.6, en[0] + 6, en[1] + 4, 0], [10.2, en[0] + 6, en[1] + 4, 1],
-    [14.2, ok[0], ok[1] + 4, 0], [14.9, ok[0], ok[1] + 4, 1], [16.2, 940, 560, 0]
-  ];
-}
-function cursorAt(t) {
-  if (!WP || t < WP[0][0] || t > WP[WP.length - 1][0]) return null;
-  for (let i = 0; i < WP.length - 1; i++) {
-    const a = WP[i], b = WP[i + 1];
-    if (t >= a[0] && t <= b[0]) {
-      const k = ease((t - a[0]) / (b[0] - a[0] || 1));
-      return [lerp(a[1], b[1], k), lerp(a[2], b[2], k)];
-    }
-  }
-  return null;
-}
-function clickAge(t) { let best = 9; for (const w of WP) if (w[3]) best = Math.min(best, Math.abs(t - w[0]) * (t >= w[0] ? 1 : 99)); return best; }
+/* The OBS clip: frame n is at (n-1)/30 s of the clip; the clip's own t=0.65 s is when the
+   recorder's script clock started, so scene time == script time. */
+const FRAMES = new URLSearchParams(location.search).get('frames') || '';
+const CLIP_OFFSET = 0.65;
 
 /* ---- terminal ---- */
 const TERM = [
@@ -369,20 +320,14 @@ function sceneD(lt) {
   $('#toastD').style.opacity = lt >= 6.2 && lt < 8.6 ? 1 : 0;
 }
 
-/* ---- OBS scene ---- */
+/* ---- OBS scene (real footage) ---- */
 function sceneA(lt) {
-  const t = lt + 3.6;
-  $('#dd').style.display = (t >= 5.7 && t < 7.8) ? 'block' : 'none';
-  $('#dd').style.left = ($('#mTools').offsetLeft) + 'px'; $('#dd').style.top = '34px';
-  $('#mTools').classList.toggle('hot', t >= 5.6 && t < 7.8);
-  $('#ddWs').classList.toggle('hot', t >= 6.7 && t < 7.8);
-  const dlg = t >= 7.9 && t < 15.3;
-  $('#dlg').style.display = dlg ? 'block' : 'none';
-  $('#dlg').style.opacity = ease((t - 7.9) / 0.35);
-  const on = t >= 10.2;
-  const box = $('#chkEnable'); box.classList.toggle('on', on); box.textContent = on ? '✓' : '';
-  $('#dlgOk').classList.toggle('hot', t >= 14.3 && t < 15.0);
+  const n = Math.max(1, Math.floor((lt + CLIP_OFFSET) * 30) + 1);
+  const src = FRAMES + '/' + String(n).padStart(5, '0') + '.jpg';
+  const img = $('#obsimg');
+  if (img.dataset.src !== src) { img.dataset.src = src; img.src = src; }
 }
+window.ready = () => { const img = $('#obsimg'); if (!img.getAttribute('src')) return Promise.resolve(); return img.complete ? Promise.resolve() : new Promise(r => { img.onload = img.onerror = () => r(); }); };
 
 /* ---- result ---- */
 function sceneE(lt) {
@@ -408,7 +353,6 @@ function sceneE(lt) {
 }
 
 function seek(t) {
-  if (!WP) buildPath();
   t = Math.min(Math.max(t, 0), DUR - 0.001);
   for (const [id, a, b] of SC) {
     const el = $('#' + id), on = t >= a && t < b;
@@ -435,14 +379,6 @@ function seek(t) {
   const sub = SUBS.find(s => t >= s[0] && t < s[1]);
   $('#capSub').textContent = sub ? sub[2] : '';
   $('#capSub').style.opacity = sub ? Math.min(ease((t - sub[0]) / 0.3), ease((sub[1] - t) / 0.25)) : 0;
-  // cursor
-  const cp = cursorAt(t), cu = $('#cursor'), rp = $('#ripple');
-  if (cp && t >= 3.6 && t < 17.2) {
-    cu.style.opacity = 1; cu.style.transform = 'translate(' + cp[0] + 'px,' + cp[1] + 'px)';
-    const age = clickAge(t);
-    if (age < 0.5) { rp.style.opacity = 0.9 * (1 - age / 0.5); rp.style.transform = 'translate(' + (cp[0] - 14) + 'px,' + (cp[1] - 14) + 'px) scale(' + (0.4 + age * 1.6) + ')'; }
-    else rp.style.opacity = 0;
-  } else { cu.style.opacity = 0; rp.style.opacity = 0; }
 }
 window.seek = seek; window.DUR = DUR;
 seek(0);

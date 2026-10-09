@@ -28,7 +28,7 @@ obscura, zaten kurulu olan OBS'i yerleşik WebSocket sunucusu (obs-websocket v5)
 
 ## Kurulum
 
-<p align="center"><a href="docs/video/obscura-install-tr.mp4"><img src="docs/video/poster-tr.jpg" width="780" alt="Kurulum videosu: OBS WebSocket sunucusu, derleme, çubuk, kısayol"></a><br><sub>▶ Kurulumun tamamını izle (68 sn, sessiz)</sub></p>
+<p align="center"><a href="docs/video/obscura-install-tr.mp4"><img src="docs/video/poster-tr.jpg" width="780" alt="Kurulum videosu: OBS WebSocket sunucusu, derleme, çubuk, kısayol"></a><br><sub>▶ Kurulumun tamamını izle (74 sn, sessiz)</sub></p>
 
 <p align="center"><img src="docs/assets/install.svg" width="780" alt="Animasyonlu terminal: git clone, cargo build, obscura doctor, obscura toggle"></p>
 

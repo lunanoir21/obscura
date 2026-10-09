@@ -8,6 +8,8 @@ obscura drives the OBS you already have through its built-in WebSocket server (o
 
 *Türkçe: [README.tr.md](README.tr.md)*
 
+<p align="center"><img src="docs/cover.png" width="900" alt="obscura: the bar pill while recording, and its panel"></p>
+
 > Status: early, usable. Built and tested on Hyprland with OBS Studio 32 and Quickshell 0.3; other setups are untested.
 
 ## What you get
@@ -18,6 +20,17 @@ obscura drives the OBS you already have through its built-in WebSocket server (o
 - **A shortcut that works from anywhere.** `obscura toggle` works with the bar closed, and opens OBS in the background if it is not running.
 - **Hooks.** A notification when a recording is saved, optionally the path on the clipboard, and your own scripts.
 - **A screen-share picker** drawn by your Quickshell setup instead of the stock portal dialog (optional, see below).
+
+## Screenshots
+
+Drawn by the widget's own code in a made-up world on black (`tools/shots/shots.sh`), so they show nothing from a real desktop.
+
+| | |
+|---|---|
+| <img src="docs/screenshots/bar-recording.png" alt="Recording"> | <img src="docs/screenshots/bar-saved.png" alt="Saved"> |
+| <img src="docs/screenshots/panel-control.png" alt="Panel: control"> | <img src="docs/screenshots/panel-record.png" alt="Panel: recording settings"> |
+| <img src="docs/screenshots/panel-folder.png" alt="Panel: folder chooser"> | <img src="docs/screenshots/panel-look.png" alt="Panel: look"> |
+| <img src="docs/screenshots/picker-screens.png" alt="Screen-share picker: screens"> | <img src="docs/screenshots/picker-windows.png" alt="Screen-share picker: windows"> |
 
 ## Design goals
 

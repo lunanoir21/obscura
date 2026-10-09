@@ -245,6 +245,14 @@ code { font-size: 0.88em; background: var(--code); border: 1px solid var(--rule)
 .foot span { flex: 1; color: var(--w-o1); font-size: 12.5px; }
 .pick-copy p { color: var(--ink-2); max-width: 520px; }
 
+/* gallery */
+.gallery { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 14px; }
+.gallery figure { margin: 0; background: #000; border: 1px solid var(--rule); border-radius: 18px; overflow: hidden; display: flex; flex-direction: column; }
+.gallery img { display: block; width: 100%; height: auto; }
+.gallery figcaption { font-size: 13px; color: #a3a3a3; padding: 0 16px 14px; margin-top: auto; }
+@media (max-width: 900px) { .gallery { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+@media (max-width: 560px) { .gallery { grid-template-columns: 1fr; } }
+
 /* code + install */
 .film { margin: 0 0 22px; }
 .film video { display: block; width: 100%; max-width: 780px; height: auto; border-radius: 18px; background: #0b0b0b; border: 1px solid var(--rule); }

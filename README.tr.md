@@ -8,6 +8,8 @@ obscura, zaten kurulu olan OBS'i yerleşik WebSocket sunucusu (obs-websocket v5)
 
 *English: [README.md](README.md)*
 
+<p align="center"><img src="docs/cover.png" width="900" alt="obscura: kayıt sırasında çubuk hapı ve paneli"></p>
+
 > Durum: erken ama kullanılabilir. Hyprland, OBS Studio 32 ve Quickshell 0.3 üzerinde derlenip denendi; diğer kurulumlar denenmedi.
 
 ## Neler var
@@ -18,6 +20,17 @@ obscura, zaten kurulu olan OBS'i yerleşik WebSocket sunucusu (obs-websocket v5)
 - **Her yerden çalışan kısayol.** `obscura toggle` çubuk kapalıyken de çalışır; OBS çalışmıyorsa onu arka planda açar.
 - **Kancalar.** Kayıt kaydedilince bildirim, isteğe bağlı olarak yolun panoya kopyalanması ve kendi betiklerin.
 - **Ekran paylaşımı seçici.** Stok portal diyaloğu yerine Quickshell kurulumunun çizdiği kart (isteğe bağlı, aşağıya bak).
+
+## Ekran görüntüleri
+
+Widget'ın kendi koduyla, siyah zeminde, uydurma bir dünyada çizildi (`tools/shots/shots.sh`); gerçek bir masaüstünden hiçbir şey göstermezler.
+
+| | |
+|---|---|
+| <img src="docs/screenshots/bar-recording.png" alt="Kayıtta"> | <img src="docs/screenshots/bar-saved.png" alt="Kaydedildi"> |
+| <img src="docs/screenshots/panel-control.png" alt="Panel: kontrol"> | <img src="docs/screenshots/panel-record.png" alt="Panel: kayıt ayarları"> |
+| <img src="docs/screenshots/panel-folder.png" alt="Panel: klasör seçici"> | <img src="docs/screenshots/panel-look.png" alt="Panel: görünüm"> |
+| <img src="docs/screenshots/picker-screens.png" alt="Ekran paylaşımı seçici: ekranlar"> | <img src="docs/screenshots/picker-windows.png" alt="Ekran paylaşımı seçici: pencereler"> |
 
 ## Tasarım hedefleri
 

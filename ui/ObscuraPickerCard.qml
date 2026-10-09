@@ -53,14 +53,14 @@ Rectangle {
         Column {
             spacing: 4 * root.u
             Text {
-                text: "Ne paylaşılsın?"
+                text: ObscuraStrings.t("pick.title")
                 color: root.pal.text
                 font.family: root.uiFont
                 font.pixelSize: 17 * root.u
                 font.weight: Font.DemiBold
             }
             Text {
-                text: "Bir uygulama ekranını görmek istiyor. Birini seç."
+                text: ObscuraStrings.t("pick.sub")
                 color: root.pal.overlay1
                 font.family: root.uiFont
                 font.pixelSize: 12.5 * root.u
@@ -74,11 +74,11 @@ Rectangle {
             uiFont: root.uiFont
             options: [
                 {
-                    label: "Ekranlar",
+                    label: ObscuraStrings.t("pick.screens"),
                     value: 0
                 },
                 {
-                    label: "Pencereler (" + root.windows.length + ")",
+                    label: ObscuraStrings.t("pick.windows", root.windows.length),
                     value: 1
                 }
             ]
@@ -121,7 +121,7 @@ Rectangle {
                             anchors.verticalCenter: parent.verticalCenter
                             spacing: 2 * root.u
                             Text {
-                                text: "Tüm ekran · " + modelData.name
+                                text: ObscuraStrings.t("pick.fullscreen", modelData.name)
                                 color: root.pal.text
                                 font.family: root.uiFont
                                 font.pixelSize: 14 * root.u
@@ -220,7 +220,7 @@ Rectangle {
         }
         Text {
             visible: root.tab === 1 && root.windows.length === 0
-            text: "Açık pencere yok."
+            text: ObscuraStrings.t("pick.noWindows")
             color: root.pal.overlay1
             font.family: root.uiFont
             font.pixelSize: 13 * root.u
@@ -239,7 +239,7 @@ Rectangle {
             Text {
                 anchors.verticalCenter: parent.verticalCenter
                 width: parent.width - 30 * root.u - 12 * root.u - 12 * root.u - 90 * root.u
-                text: "Bu seçimi hatırla (bir daha sorma)"
+                text: ObscuraStrings.t("pick.remember")
                 elide: Text.ElideRight
                 color: root.pal.overlay1
                 font.family: root.uiFont
@@ -251,7 +251,7 @@ Rectangle {
                 pal: root.pal
                 u: root.u
                 uiFont: root.uiFont
-                label: "İptal"
+                label: ObscuraStrings.t("btn.cancel")
                 onClicked: root.cancelled()
             }
         }

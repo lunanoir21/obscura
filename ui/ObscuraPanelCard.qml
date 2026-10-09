@@ -98,7 +98,7 @@ Rectangle {
         spacing: 20 * root.u
         height: 28 * root.u
         Repeater {
-            model: ["Kontrol", "Kayıt", "Görünüm"]
+            model: [ObscuraStrings.t("tab.control"), ObscuraStrings.t("tab.record"), ObscuraStrings.t("tab.look")]
             Item {
                 required property string modelData
                 required property int index
@@ -142,7 +142,7 @@ Rectangle {
         anchors.right: parent.right
         anchors.rightMargin: 20 * root.u
         y: 24 * root.u
-        text: root.connected ? "OBS · bağlı" : (ObscuraStore.state === "disabled" ? "sunucu kapalı" : ObscuraStore.state === "auth" ? "parola gerekli" : "OBS kapalı")
+        text: root.connected ? ObscuraStrings.t("conn.ok") : (ObscuraStore.state === "disabled" ? ObscuraStrings.t("conn.serverOff") : ObscuraStore.state === "auth" ? ObscuraStrings.t("conn.auth") : ObscuraStrings.t("conn.closed"))
     }
 
     // ---- Kontrol -----------------------------------------------------
@@ -166,7 +166,7 @@ Rectangle {
             }
             Text {
                 anchors.verticalCenter: parent.verticalCenter
-                text: ObscuraStore.recording ? "Kaydediliyor" : ObscuraStore.paused ? "Duraklatıldı" : root.connected ? "Hazır" : "Bağlı değil"
+                text: ObscuraStore.recording ? ObscuraStrings.t("st.recording") : ObscuraStore.paused ? ObscuraStrings.t("st.paused") : root.connected ? ObscuraStrings.t("st.ready") : ObscuraStrings.t("st.notConnected")
                 color: root.pal.text
                 font.family: root.uiFont
                 font.pixelSize: 13.5 * root.u
@@ -206,7 +206,7 @@ Rectangle {
                 uiFont: root.uiFont
                 primary: true
                 dim: ObscuraStore.state === "disabled" || ObscuraStore.state === "auth" || ObscuraStore.launching
-                label: root.connected ? "Kaydı başlat" : ObscuraStore.launching ? "OBS açılıyor…" : ObscuraStore.state === "offline" ? "OBS'i aç" : "OBS ayarı gerekli"
+                label: root.connected ? ObscuraStrings.t("btn.start") : ObscuraStore.launching ? ObscuraStrings.t("pill.opening") : ObscuraStore.state === "offline" ? ObscuraStrings.t("btn.openObs") : ObscuraStrings.t("btn.obsSetup")
                 onClicked: root.connected ? ObscuraStore.toggle() : ObscuraStore.openObs()
             }
             ObscuraButton {
@@ -215,7 +215,7 @@ Rectangle {
                 pal: root.pal
                 u: root.u
                 uiFont: root.uiFont
-                label: ObscuraStore.paused ? "Devam" : "Duraklat"
+                label: ObscuraStore.paused ? ObscuraStrings.t("btn.resume") : ObscuraStrings.t("btn.pause")
                 onClicked: ObscuraStore.pause()
             }
             ObscuraButton {
@@ -225,7 +225,7 @@ Rectangle {
                 u: root.u
                 uiFont: root.uiFont
                 primary: true
-                label: "Durdur"
+                label: ObscuraStrings.t("btn.stop")
                 onClicked: ObscuraStore.toggle()
             }
         }
@@ -235,7 +235,7 @@ Rectangle {
             spacing: 8 * root.u
             visible: (root.info.scenes || []).length > 1
             Cap {
-                text: "Sahne"
+                text: ObscuraStrings.t("scene")
             }
             Flow {
                 width: parent.width
@@ -272,7 +272,7 @@ Rectangle {
             width: parent.width
             spacing: 4 * root.u
             Cap {
-                text: "Ses kaynakları"
+                text: ObscuraStrings.t("sources")
             }
             Repeater {
                 model: root.info.inputs || []
@@ -323,7 +323,7 @@ Rectangle {
             }
             Hint {
                 visible: (root.info.inputs || []).length === 0
-                text: root.connected ? "OBS'te ses kaynağı yok." : "OBS bağlanınca burada görünür."
+                text: root.connected ? ObscuraStrings.t("src.none") : ObscuraStrings.t("src.later")
             }
         }
 
@@ -336,7 +336,7 @@ Rectangle {
                 u: root.u
                 uiFont: root.uiFont
                 dim: !root.replay.active
-                label: root.replay.active ? "Son " + (root.replay.seconds || 30) + " sn'yi kaydet" : "Replay kapalı"
+                label: root.replay.active ? ObscuraStrings.t("replay.save", root.replay.seconds || 30) : ObscuraStrings.t("replay.off")
                 onClicked: ObscuraStore.act(["replay", "save"])
             }
             ObscuraButton {
@@ -345,7 +345,7 @@ Rectangle {
                 u: root.u
                 uiFont: root.uiFont
                 dim: !root.connected
-                label: "Ekran"
+                label: ObscuraStrings.t("btn.shot")
                 onClicked: ObscuraStore.shot()
             }
             ObscuraButton {
@@ -353,7 +353,7 @@ Rectangle {
                 pal: root.pal
                 u: root.u
                 uiFont: root.uiFont
-                label: "Klasör"
+                label: ObscuraStrings.t("btn.folder")
                 onClicked: ObscuraStore.openDir(root.record.dir)
             }
         }
@@ -377,7 +377,7 @@ Rectangle {
             width: parent.width
             spacing: 8 * root.u
             Cap {
-                text: "Kayıt klasörü"
+                text: ObscuraStrings.t("rec.folder")
             }
             Row {
                 width: parent.width
@@ -400,7 +400,7 @@ Rectangle {
                     u: root.u
                     uiFont: root.uiFont
                     dim: !root.connected
-                    label: "Seç"
+                    label: ObscuraStrings.t("btn.choose")
                     onClicked: ObscuraStore.openBrowser()
                 }
             }
@@ -409,7 +409,7 @@ Rectangle {
             width: parent.width
             spacing: 8 * root.u
             Cap {
-                text: "Dosya adı"
+                text: ObscuraStrings.t("rec.name")
             }
             ObscuraField {
                 width: parent.width
@@ -424,7 +424,7 @@ Rectangle {
             }
             Hint {
                 visible: !!root.record.example
-                text: "Sonraki dosya: " + root.record.example
+                text: ObscuraStrings.t("rec.next", root.record.example)
                 color: root.pal.overlay1
                 font.family: root.monoFont
                 font.pixelSize: 11 * root.u
@@ -433,11 +433,11 @@ Rectangle {
             }
             Hint {
                 visible: root.record.exists === true
-                text: root.record.overwrite === true ? "Bu adla bir dosya zaten var ve üzerine yazılacak." : "Bu adla bir dosya zaten var; OBS yenisinin sonuna (1) ekleyerek kaydeder."
+                text: root.record.overwrite === true ? ObscuraStrings.t("rec.overwrite") : ObscuraStrings.t("rec.exists")
                 color: root.record.overwrite === true ? root.pal.red : root.pal.yellow
             }
             Hint {
-                text: "%CCYY yıl  %MM ay  %DD gün  %hh saat  %mm dakika  %ss saniye"
+                text: ObscuraStrings.t("rec.tokens")
                 font.family: root.monoFont
                 font.pixelSize: 10.5 * root.u
             }
@@ -446,7 +446,7 @@ Rectangle {
             width: parent.width
             spacing: 8 * root.u
             Cap {
-                text: "Kare hızı"
+                text: ObscuraStrings.t("rec.fps")
             }
             ObscuraSeg {
                 width: parent.width
@@ -460,14 +460,14 @@ Rectangle {
             }
             Hint {
                 visible: root.maxFps > 0
-                text: "Ekranın " + root.maxFps + " Hz; bundan yüksek kare hızı aynı kareyi tekrarlar, bu yüzden seçilemiyor."
+                text: ObscuraStrings.t("rec.fpsHint", root.maxFps)
             }
         }
         Column {
             width: parent.width
             spacing: 8 * root.u
             Cap {
-                text: "Çözünürlük"
+                text: ObscuraStrings.t("rec.res")
             }
             ObscuraSeg {
                 width: parent.width
@@ -475,7 +475,7 @@ Rectangle {
                 u: root.u
                 uiFont: root.uiFont
                 locked: root.active
-                options: [{label: "720p", value: 720}, {label: "1080p", value: 1080}, {label: "1440p", value: 1440}, {label: "Yerel", value: -1}]
+                options: [{label: "720p", value: 720}, {label: "1080p", value: 1080}, {label: "1440p", value: 1440}, {label: ObscuraStrings.t("opt.native"), value: -1}]
                 current: [720, 1080, 1440].indexOf(root.video.out_h) >= 0 ? root.video.out_h : (root.video.out_h === root.video.base_h ? -1 : 0)
                 onPicked: v => ObscuraStore.act(["set", "resolution", v < 0 ? "native" : String(v)])
             }
@@ -484,7 +484,7 @@ Rectangle {
             width: parent.width
             spacing: 8 * root.u
             Cap {
-                text: "Biçim"
+                text: ObscuraStrings.t("rec.format")
             }
             ObscuraSeg {
                 width: parent.width
@@ -497,14 +497,14 @@ Rectangle {
                 onPicked: v => ObscuraStore.act(["set", "format", v])
             }
             Hint {
-                text: "MKV kayıt yarıda kesilse bile dosyayı korur."
+                text: ObscuraStrings.t("rec.mkvHint")
             }
         }
         Column {
             width: parent.width
             spacing: 8 * root.u
             Cap {
-                text: "Replay buffer"
+                text: ObscuraStrings.t("rec.replay")
             }
             Row {
                 spacing: 12 * root.u
@@ -520,7 +520,7 @@ Rectangle {
                 }
                 Text {
                     anchors.verticalCenter: parent.verticalCenter
-                    text: root.replay.enabled ? (root.replay.active ? "Açık" : "Kapalı") : "OBS ayarlarında etkin değil"
+                    text: root.replay.enabled ? (root.replay.active ? ObscuraStrings.t("rec.on") : ObscuraStrings.t("rec.off")) : ObscuraStrings.t("rec.replayDisabled")
                     color: root.pal.overlay1
                     font.family: root.uiFont
                     font.pixelSize: 12.5 * root.u
@@ -531,14 +531,14 @@ Rectangle {
                 pal: root.pal
                 u: root.u
                 uiFont: root.uiFont
-                options: [{label: "15 sn", value: 15}, {label: "30 sn", value: 30}, {label: "60 sn", value: 60}, {label: "120 sn", value: 120}]
+                options: [15, 30, 60, 120].map(n => ({label: ObscuraStrings.t("opt.seconds", n), value: n}))
                 current: root.replay.seconds
                 onPicked: v => ObscuraStore.act(["set", "replay-seconds", String(v)])
             }
         }
         Hint {
             visible: root.active
-            text: "Kayıt sürerken kare hızı, çözünürlük ve biçim kilitli; klasör ve ad sonraki kayıttan geçerli olur."
+            text: ObscuraStrings.t("rec.locked")
         }
         Hint {
             visible: ObscuraStore.error !== ""
@@ -657,7 +657,7 @@ Rectangle {
             Text {
                 visible: folderList.count === 0
                 anchors.centerIn: parent
-                text: ObscuraStore.browseError !== "" ? ObscuraStore.browseError : "Alt klasör yok."
+                text: ObscuraStore.browseError !== "" ? ObscuraStore.browseError : ObscuraStrings.t("browse.empty")
                 color: ObscuraStore.browseError !== "" ? root.pal.yellow : root.pal.overlay1
                 font.family: root.uiFont
                 font.pixelSize: 12.5 * root.u
@@ -674,7 +674,7 @@ Rectangle {
                 pal: root.pal
                 u: root.u
                 uiFont: root.uiFont
-                label: "İptal"
+                label: ObscuraStrings.t("btn.cancel")
                 onClicked: ObscuraStore.closeBrowser()
             }
             ObscuraButton {
@@ -684,7 +684,7 @@ Rectangle {
                 uiFont: root.uiFont
                 primary: true
                 dim: ObscuraStore.browseData.writable === false
-                label: ObscuraStore.browseData.writable === false ? "Yazılamaz" : "Bu klasörü seç"
+                label: ObscuraStore.browseData.writable === false ? ObscuraStrings.t("browse.readonly") : ObscuraStrings.t("browse.use")
                 onClicked: ObscuraStore.chooseBrowsed()
             }
         }
@@ -703,7 +703,7 @@ Rectangle {
             width: parent.width
             spacing: 8 * root.u
             Cap {
-                text: "Süre yazısı"
+                text: ObscuraStrings.t("look.timerFont")
             }
             ObscuraSeg {
                 width: parent.width
@@ -719,7 +719,7 @@ Rectangle {
             width: parent.width
             spacing: 8 * root.u
             Cap {
-                text: "Yazı boyutu"
+                text: ObscuraStrings.t("look.size")
             }
             Row {
                 width: parent.width
@@ -786,7 +786,7 @@ Rectangle {
             width: parent.width
             spacing: 4 * root.u
             Cap {
-                text: "Kayıt bitince"
+                text: ObscuraStrings.t("look.after")
             }
             Row {
                 height: 34 * root.u
@@ -800,7 +800,7 @@ Rectangle {
                 }
                 Text {
                     anchors.verticalCenter: parent.verticalCenter
-                    text: "Bildirim göster"
+                    text: ObscuraStrings.t("look.notify")
                     color: root.pal.text
                     font.family: root.uiFont
                     font.pixelSize: 13 * root.u
@@ -818,7 +818,7 @@ Rectangle {
                 }
                 Text {
                     anchors.verticalCenter: parent.verticalCenter
-                    text: "Dosya yolunu panoya kopyala"
+                    text: ObscuraStrings.t("look.copy")
                     color: root.pal.text
                     font.family: root.uiFont
                     font.pixelSize: 13 * root.u
@@ -829,7 +829,7 @@ Rectangle {
             width: parent.width
             spacing: 8 * root.u
             Cap {
-                text: "OBS bağlantısı"
+                text: ObscuraStrings.t("look.conn")
             }
             Row {
                 width: parent.width
@@ -847,7 +847,7 @@ Rectangle {
                     anchors.verticalCenter: parent.verticalCenter
                     width: parent.width - 110 * root.u - 10 * root.u
                     wrapMode: Text.WordWrap
-                    text: ObscuraStore.cfg.obs_port > 0 ? "Port " + ObscuraStore.cfg.obs_port + " kullanılıyor." : "Boş: OBS'in kendi ayarı kullanılır (WebSocket Server Settings)."
+                    text: ObscuraStore.cfg.obs_port > 0 ? ObscuraStrings.t("look.portUsing", ObscuraStore.cfg.obs_port) : ObscuraStrings.t("look.portAuto")
                     color: root.pal.overlay1
                     font.family: root.uiFont
                     font.pixelSize: 11.5 * root.u
@@ -863,14 +863,30 @@ Rectangle {
             width: parent.width
             spacing: 8 * root.u
             Cap {
-                text: "Düğme biçimi"
+                text: ObscuraStrings.t("look.language")
             }
             ObscuraSeg {
                 width: parent.width
                 pal: root.pal
                 u: root.u
                 uiFont: root.uiFont
-                options: [{label: "Daire", value: "circle"}, {label: "Hap", value: "pill"}, {label: "Yalnız simge", value: "icon"}]
+                options: [{label: ObscuraStrings.t("opt.auto"), value: "auto"}, {label: "English", value: "en"}, {label: "Türkçe", value: "tr"}]
+                current: ObscuraStrings.setting
+                onPicked: v => ObscuraStore.setConfig("language", v)
+            }
+        }
+        Column {
+            width: parent.width
+            spacing: 8 * root.u
+            Cap {
+                text: ObscuraStrings.t("look.button")
+            }
+            ObscuraSeg {
+                width: parent.width
+                pal: root.pal
+                u: root.u
+                uiFont: root.uiFont
+                options: [{label: ObscuraStrings.t("opt.circle"), value: "circle"}, {label: ObscuraStrings.t("opt.pill"), value: "pill"}, {label: ObscuraStrings.t("opt.icon"), value: "icon"}]
                 current: ObscuraStore.buttonStyle
                 onPicked: v => ObscuraStore.setConfig("button_style", v)
             }

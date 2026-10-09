@@ -151,7 +151,7 @@ Item {
                 Text {
                     visible: root.style === "pill"
                     anchors.verticalCenter: parent.verticalCenter
-                    text: "Kayıt"
+                    text: ObscuraStrings.t("pill.record")
                     color: root.dim ? root.pal.overlay1 : root.pal.text
                     font.family: root.uiFont
                     font.pixelSize: 14 * root.u
@@ -271,7 +271,7 @@ Item {
                 }
                 Text {
                     anchors.verticalCenter: parent.verticalCenter
-                    text: "Kaydedildi"
+                    text: ObscuraStrings.t("pill.saved")
                     color: root.pal.text
                     font.family: root.uiFont
                     font.pixelSize: 14 * root.u
@@ -310,7 +310,7 @@ Item {
                 }
                 Text {
                     anchors.verticalCenter: parent.verticalCenter
-                    text: ObscuraStore.state === "auth" ? "Parola gerekli" : ObscuraStore.state === "offline" ? "OBS açılıyor…" : "OBS sunucusu kapalı"
+                    text: ObscuraStore.state === "auth" ? ObscuraStrings.t("pill.auth") : ObscuraStore.state === "offline" ? ObscuraStrings.t("pill.opening") : ObscuraStrings.t("pill.serverOff")
                     color: root.pal.text
                     font.family: root.uiFont
                     font.pixelSize: 13 * root.u

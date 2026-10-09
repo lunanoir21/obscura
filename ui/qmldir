@@ -7,3 +7,5 @@ ObscuraSwitch 1.0 ObscuraSwitch.qml
 ObscuraButton 1.0 ObscuraButton.qml
 ObscuraField 1.0 ObscuraField.qml
 ObscuraPickerHost 1.0 ObscuraPickerHost.qml
+ObscuraPanelCard 1.0 ObscuraPanelCard.qml
+ObscuraPickerCard 1.0 ObscuraPickerCard.qml

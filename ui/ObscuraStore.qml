@@ -39,7 +39,7 @@ Singleton {
     }
     // Quickshell started by the compositor may not inherit the login PATH, so
     // the build beside this module and the usual install dirs are tried too.
-    readonly property var candidates: [moduleDir + "../target/release/obscura", "obscura", homeDir + "/.local/bin/obscura", homeDir + "/.cargo/bin/obscura"]
+    readonly property var candidates: (Quickshell.env("OBSCURA_BIN") ? [Quickshell.env("OBSCURA_BIN")] : []).concat([moduleDir + "../target/release/obscura", "obscura", homeDir + "/.local/bin/obscura", homeDir + "/.cargo/bin/obscura"])
     readonly property string resolver: 'for c in ' + candidates.map(c => "'" + c.replace(/'/g, "'\\''") + "'").join(" ")
         + '; do case $c in */*) [ -x "$c" ] || continue ;; *) command -v "$c" >/dev/null 2>&1 || continue ;; esac; exec "$c" "$@"; done; echo "obscura binary not found" >&2; exit 127'
 

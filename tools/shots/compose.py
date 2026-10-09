@@ -11,9 +11,12 @@ import numpy as np
 raws, docs = sys.argv[1], sys.argv[2]
 cache = os.environ["SHOTS_CACHE"]
 PAD = 72  # px at 2x
+TAGLINE = {"en": "Recording is one quiet button.", "tr": "Kayıt almak, tek bir sessiz düğme."}
 THEMES = {
-    "black": dict(bg=(0, 0, 0), ink=(237, 237, 237), mid=(163, 163, 163), low=(110, 110, 110), out="screenshots", cover="cover.png"),
-    "white": dict(bg=(255, 255, 255), ink=(17, 17, 19), mid=(85, 85, 92), low=(138, 138, 146), out="screenshots/light", cover="cover-light.png"),
+    ("en", "black"): dict(bg=(0, 0, 0), ink=(237, 237, 237), mid=(163, 163, 163), low=(110, 110, 110), out="screenshots", cover="cover.png"),
+    ("en", "white"): dict(bg=(255, 255, 255), ink=(17, 17, 19), mid=(85, 85, 92), low=(138, 138, 146), out="screenshots/light", cover="cover-light.png"),
+    ("tr", "black"): dict(bg=(0, 0, 0), ink=(237, 237, 237), mid=(163, 163, 163), low=(110, 110, 110), out="screenshots/tr", cover="cover-tr.png"),
+    ("tr", "white"): dict(bg=(255, 255, 255), ink=(17, 17, 19), mid=(85, 85, 92), low=(138, 138, 146), out="screenshots/tr/light", cover="cover-tr-light.png"),
 }
 
 
@@ -24,8 +27,8 @@ def trim(img, bg, pad=PAD):
     return img.crop(box)
 
 
-for theme, t in THEMES.items():
-    raw = os.path.join(raws, theme)
+for (lang, theme), t in THEMES.items():
+    raw = os.path.join(raws, lang, theme)
     shots = {}
     for name in sorted(os.listdir(raw)):
         if name.endswith(".png"):
@@ -48,7 +51,7 @@ for theme, t in THEMES.items():
     logo = Image.open(os.path.join(docs, "assets", "logo-512.png")).convert("RGBA").resize((176, 176), Image.LANCZOS)
     cover.paste(logo, (130, 150), logo)
     d.text((130, 360), "obscura", font=serif, fill=t["ink"])
-    d.text((136, 590), "Recording is one quiet button.", font=sans, fill=t["mid"])
+    d.text((136, 590), TAGLINE[lang], font=sans, fill=t["mid"])
     d.text((136, 664), "OBS Studio · Quickshell · Hyprland", font=small, fill=t["low"])
 
     y = 760
@@ -59,4 +62,4 @@ for theme, t in THEMES.items():
         cover.paste(im, (60, y))
         y += im.height - 60
     cover.save(os.path.join(docs, t["cover"]), optimize=True)
-    print(theme, "cover", cover.size)
+    print(lang, theme, "cover", cover.size)

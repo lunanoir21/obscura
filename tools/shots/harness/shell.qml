@@ -12,6 +12,7 @@ ShellRoot {
     readonly property string out: Quickshell.env("OUT")
     property int step: -1
 
+    readonly property bool tr: Quickshell.env("SHOTLANG") === "tr"
     readonly property bool light: Quickshell.env("THEME") === "white"
     readonly property color bg: light ? "#ffffff" : "#000000"
 
@@ -40,9 +41,9 @@ ShellRoot {
 
     // What the panel would be told by OBS.
     readonly property var infoBase: ({
-            scenes: ["Masaüstü", "Oyun", "Kamera"],
-            scene: "Masaüstü",
-            inputs: [{ name: "Masaüstü Ses", muted: false }, { name: "Mic/Aux", muted: false }],
+            scenes: root.tr ? ["Masaüstü", "Oyun", "Kamera"] : ["Desktop", "Game", "Camera"],
+            scene: root.tr ? "Masaüstü" : "Desktop",
+            inputs: [{ name: root.tr ? "Masaüstü Ses" : "Desktop Audio", muted: false }, { name: "Mic/Aux", muted: false }],
             video: { fps: 60, base_w: 1920, base_h: 1080, out_w: 1920, out_h: 1080 },
             record: { dir: "/home/you/Videos/obscura", filename: "%CCYY-%MM-%DD %hh-%mm-%ss", format: "mkv", mode: "SimpleOutput", example: "2026-10-09 22-20-14.mkv", exists: false, overwrite: false },
             replay: { enabled: true, active: true, seconds: 30 },
@@ -58,8 +59,11 @@ ShellRoot {
         S.justSaved = false;
         S.browsing = false;
         S.info = Object.assign({}, root.infoBase, extra || {});
-        S.levels = { "Masaüstü Ses": 0.62, "Mic/Aux": 0.3 };
-        S.cfg = { timer_font: "Space Mono", timer_size: 18, button_style: "circle", notify_saved: true, copy_path: false, obs_port: 0 };
+        const lv = {};
+        lv[root.infoBase.inputs[0].name] = 0.62;
+        lv["Mic/Aux"] = 0.3;
+        S.levels = lv;
+        S.cfg = { timer_font: "Space Mono", timer_size: 18, button_style: "circle", notify_saved: true, copy_path: false, obs_port: 0, language: root.tr ? "tr" : "en" };
     }
 
     readonly property var shots: [

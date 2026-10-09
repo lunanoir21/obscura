@@ -53,7 +53,7 @@
     "inst.2h": "Derle",
     "inst.3h": "Çubuğuna ekle", "inst.3p": "Modülü Quickshell yapılandırmana koy ve hapı istediğin yere yerleştir. <code>pal</code> renk nesnen, <code>u</code> ölçek birimin.",
     "inst.4h": "Bir tuşa bağla",
-    "film.cap": "Kurulumun tamamı, baştan sona: OBS, derleme, çubuk, kısayol (74 sn, sessiz).",
+    "film.cap": "Kurulumun tamamı, baştan sona: OBS, derleme, çubuk, kısayol (82 sn, sessiz).",
     "inst.note": "Hyprland, OBS Studio 32 ve Quickshell 0.3 üzerinde derlenip denendi. Diğer kurulumlar denenmedi.",
     "foot.tag": "— camera obscura: ışığın bir görüntü oluşturmak için geçtiği karanlık oda.",
     "tab.control": "Kontrol", "tab.record": "Kayıt", "tab.look": "Görünüm",

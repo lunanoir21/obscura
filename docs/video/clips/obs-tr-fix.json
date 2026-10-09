@@ -1,1 +1,1 @@
-{"note":"frames where the dialog was caught at 0,0 before it was moved: show the previous good frame instead","hold":{"181":180,"182":180,"183":180}}
+{"note":"frames where the dialog was caught at 0,0 before it was moved (60 fps clip): show the last good frame","clip_offset":0.55,"hold":{"433":432,"434":432,"435":432,"436":432,"437":432,"438":432}}

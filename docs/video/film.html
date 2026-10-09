@@ -5,109 +5,105 @@
 <title>obscura install film</title>
 <style>
 *{box-sizing:border-box;margin:0}
-html,body{width:1280px;height:720px;overflow:hidden;background:#0b0b0b}
+html,body{width:1280px;height:720px;overflow:hidden;background:#0a0a0b}
 body{font:400 16px 'Instrument Sans',system-ui,sans-serif;color:#ededed}
-#stage{position:relative;width:1280px;height:720px;background:#0b0b0b;overflow:hidden}
-.scene{position:absolute;inset:0;opacity:0;visibility:hidden}
+#stage{position:relative;width:1280px;height:720px;background:#0a0a0b;overflow:hidden}
+.scene{position:absolute;inset:0;opacity:0;visibility:hidden;will-change:transform,opacity}
 .mono{font-family:'JetBrains Mono',ui-monospace,monospace}
-.serif{font-family:'Instrument Serif',Georgia,serif}
 
-/* caption */
-#cap{position:absolute;left:50%;bottom:34px;transform:translateX(-50%);display:flex;flex-direction:column;align-items:center;gap:10px;z-index:50;width:1000px}
-#cap .main{background:#ededed;color:#0b0b0b;font:600 21px 'Instrument Sans',sans-serif;padding:11px 24px;border-radius:999px;letter-spacing:-.005em;white-space:nowrap}
-#cap .sub{font:500 16px 'Instrument Sans',sans-serif;color:#a3a3a3;background:rgba(11,11,11,.82);padding:6px 16px;border-radius:999px;min-height:30px;white-space:nowrap}
+/* progress dots */
+#dots{position:absolute;left:50%;top:22px;transform:translateX(-50%);display:flex;gap:8px;z-index:60;opacity:0}
+#dots i{display:block;height:8px;width:8px;border-radius:4px;background:rgba(237,237,237,.22)}
+#dots i.on{background:#ededed}
 
-/* window chrome */
-.win{position:absolute;background:#141416;border:1px solid #2a2a2c;border-radius:14px;overflow:hidden;box-shadow:0 30px 80px rgba(0,0,0,.55)}
+/* captions */
+#cap{position:absolute;left:50%;bottom:34px;transform:translateX(-50%);display:flex;flex-direction:column;align-items:center;gap:10px;z-index:50;width:1100px}
+#cap .main{display:flex;align-items:center;gap:12px;background:#ededed;color:#0a0a0b;font:600 21px 'Instrument Sans',sans-serif;padding:8px 24px 8px 8px;border-radius:999px;white-space:nowrap}
+#cap .num{width:34px;height:34px;border-radius:50%;background:#0a0a0b;color:#ededed;display:grid;place-items:center;font:600 17px 'JetBrains Mono',monospace}
+#cap .sub{font:500 16px 'Instrument Sans',sans-serif;color:#cfcfd2;background:rgba(10,10,11,.86);padding:7px 18px;border-radius:999px;min-height:34px;white-space:nowrap;border:1px solid rgba(255,255,255,.08)}
+
+/* windows */
+.win{position:absolute;background:#141416;border:1px solid #2a2a2c;border-radius:14px;overflow:hidden;box-shadow:0 40px 90px rgba(0,0,0,.6)}
 .bar{height:38px;background:#1b1b1d;border-bottom:1px solid #2a2a2c;display:flex;align-items:center;padding:0 14px;color:#8c8c8c;font:500 13px 'Instrument Sans',sans-serif;gap:10px}
 
-/* title + end */
+/* title / end */
 .center{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:22px;text-align:center}
-.center h1{font:italic 400 84px/1 'Instrument Serif',serif;letter-spacing:-.02em}
+.center h1{font:italic 400 88px/1 'Instrument Serif',serif;letter-spacing:-.02em;display:flex;gap:.26em}
+.center h1 span{display:inline-block;will-change:transform,opacity}
 .center p{font:400 22px 'Instrument Sans',sans-serif;color:#a3a3a3}
 .center code{font:500 20px 'JetBrains Mono',monospace;color:#ededed;background:#141416;border:1px solid #2a2a2c;border-radius:12px;padding:10px 18px}
 
-/* OBS mock */
-#obs{left:130px;top:46px;width:1020px;height:570px}
-#obsbody{position:absolute;top:38px;left:0;right:0;bottom:0}
-.menubar{height:32px;display:flex;align-items:center;gap:4px;padding:0 8px;background:#18181a;border-bottom:1px solid #2a2a2c;font:500 14px 'Instrument Sans',sans-serif;color:#cfcfcf}
-.menubar span{padding:5px 11px;border-radius:6px}
-.menubar span.hot{background:#2c2c2f;color:#fff}
-.preview{position:absolute;left:14px;right:14px;top:44px;height:290px;background:#000;border:1px solid #2a2a2c;border-radius:8px;display:grid;place-items:center;color:#3a3a3d;font:500 14px 'JetBrains Mono',monospace}
-.docks{position:absolute;left:14px;right:14px;top:346px;bottom:14px;display:grid;grid-template-columns:repeat(4,1fr);gap:10px}
-.dock{background:#18181a;border:1px solid #2a2a2c;border-radius:8px;padding:10px 12px;color:#8c8c8c;font:600 11px 'JetBrains Mono',monospace;letter-spacing:.12em;text-transform:uppercase}
-.dd{position:absolute;background:#1d1d20;border:1px solid #333337;border-radius:8px;padding:6px;font:500 14px 'Instrument Sans',sans-serif;color:#cfcfcf;box-shadow:0 14px 40px rgba(0,0,0,.5);width:270px}
-.dd div{padding:7px 12px;border-radius:5px;white-space:nowrap}
-.dd div.hot{background:#2e5ec0;color:#fff}
-#dlg{position:absolute;left:280px;top:80px;width:470px;background:#1b1b1e;border:1px solid #38383c;border-radius:12px;box-shadow:0 30px 90px rgba(0,0,0,.65);overflow:hidden;color:#d6d6d6;font:400 14px 'Instrument Sans',sans-serif}
-#dlg .t{padding:12px 18px;border-bottom:1px solid #2c2c30;font-weight:600;color:#fff}
-#dlg .b{padding:20px 22px 12px;display:flex;flex-direction:column;gap:16px}
-.chk{display:flex;align-items:center;gap:12px}
-.box{width:18px;height:18px;border-radius:4px;border:1.6px solid #6a6a70;display:grid;place-items:center;font-size:13px;color:#fff;line-height:1}
-.box.on{background:#2e5ec0;border-color:#2e5ec0}
-.fld{display:flex;align-items:center;gap:12px}
-.fld label{width:130px;color:#9a9a9f}
-.in{flex:1;height:32px;border-radius:6px;background:#0f0f11;border:1px solid #38383c;display:flex;align-items:center;padding:0 10px;font:13px 'JetBrains Mono',monospace;color:#ededed}
-.btns{display:flex;justify-content:flex-end;gap:8px;padding:6px 22px 18px}
-.btn{padding:8px 20px;border-radius:7px;background:#2a2a2e;color:#e6e6e6;font-weight:500}
-.btn.ok{background:#2e5ec0;color:#fff}
-.btn.hot{outline:2px solid rgba(255,255,255,.35)}
+/* real clip + camera */
+#sA{background:#0a0a0b}
+#cam{position:absolute;left:0;top:0;width:1280px;height:720px;transform-origin:0 0;will-change:transform}
+#cam img{position:absolute;left:0;top:0;width:1280px;height:720px}
+#hl{position:absolute;inset:0;pointer-events:none}
+.ring{position:absolute;border-radius:50%;border:3px solid rgba(255,255,255,.85);opacity:0}
+.box{position:absolute;border-radius:10px;border:2px solid #f08a82;box-shadow:0 0 0 4px rgba(240,138,130,.18);opacity:0}
 
 /* terminal */
-#term{left:190px;top:70px;width:900px;height:520px}
-#term .ln{position:absolute;left:28px;white-space:pre;font:15px 'JetBrains Mono',monospace;color:#a3a3a3}
+#term{left:190px;top:58px;width:900px;height:520px;transform-origin:50% 50%}
+#term .ln{position:absolute;left:28px;white-space:pre;font:15px 'JetBrains Mono',monospace;color:#a3a3a3;will-change:transform,opacity}
 .cur{display:inline-block;width:9px;height:18px;background:#ededed;vertical-align:-3px}
 
 /* editor */
-.ed{left:130px;top:56px;width:1020px;height:560px}
-.tabs{display:flex;gap:0;background:#1b1b1d;height:38px;border-bottom:1px solid #2a2a2c;align-items:flex-end}
+.ed{left:130px;top:44px;width:1020px;height:540px;transform-origin:50% 50%}
+.tabs{display:flex;background:#1b1b1d;height:38px;border-bottom:1px solid #2a2a2c;align-items:flex-end;position:relative}
 .tab{padding:0 20px;height:38px;display:flex;align-items:center;gap:8px;font:500 13px 'JetBrains Mono',monospace;color:#6e6e6e;border-right:1px solid #2a2a2c}
 .tab.on{background:#141416;color:#ededed}
-.sv{font-size:11px;color:#9dd6a4;margin-left:6px}
+.sv{font-size:11px;margin-left:6px;display:inline-block}
 .code{position:absolute;top:50px;left:0;right:0;bottom:0;font:15px/27px 'JetBrains Mono',monospace;color:#cfcfcf}
 .cl{position:absolute;left:0;right:0;height:27px;white-space:pre;padding-left:74px}
 .cl i{position:absolute;left:0;width:52px;text-align:right;color:#4a4a4e;font-style:normal}
-.cl.add{background:rgba(157,214,164,.09)}
-.cl .k{color:#a8a8a8}.cl .s{color:#e5bc8d}.cl .c{color:#6e6e6e}.cl .n{color:#d9bcd6}
+.cl .k{color:#a8a8a8}.cl .s{color:#e5bc8d}.cl .c{color:#6e6e6e}
 .toast{position:absolute;right:26px;top:56px;background:#1d1d20;border:1px solid #38383c;border-radius:12px;padding:12px 18px;font:500 14px 'Instrument Sans',sans-serif;color:#ededed;display:flex;gap:10px;align-items:center}
 .toast i{width:9px;height:9px;border-radius:50%;background:#9dd6a4;display:block}
 
 /* result */
 #sE{background:#a9ada1}
-.barstrip{position:absolute;left:50%;top:150px;transform:translateX(-50%) scale(1.5);transform-origin:center top;display:flex;gap:8px;align-items:center}
+.barstrip{position:absolute;left:50%;top:150px;transform:translateX(-50%) scale(1.7);transform-origin:center top;display:flex;gap:8px;align-items:center}
 .gp{height:48px;border-radius:14px;background:rgba(14,14,14,.75);border:1px solid rgba(234,234,234,.08);display:flex;align-items:center;gap:8px;padding:0 14px;color:#eaeaea;font:600 14px 'Instrument Sans',sans-serif;opacity:.6}
 .gp.r{width:48px;padding:0;justify-content:center}
 .gp b{background:#262626;border-radius:9px;padding:1px 7px;font-size:11px;font-weight:500}
-.op{position:relative;height:48px;border-radius:14px;overflow:hidden;background:rgba(14,14,14,.75);border:1px solid rgba(234,234,234,.08);color:#eaeaea}
+.op{position:relative;height:48px;border-radius:14px;overflow:hidden;background:rgba(14,14,14,.82);border:1px solid rgba(234,234,234,.1);color:#eaeaea}
 .op .lay{position:absolute;inset:0;display:flex;align-items:center;gap:10px;padding-left:14px;white-space:nowrap;font:600 14px 'Instrument Sans',sans-serif}
-.ring{width:18px;height:18px;border-radius:50%;border:1.6px solid #8c8c8c;display:grid;place-items:center}
-.ring i{width:6px;height:6px;border-radius:50%;background:#8c8c8c}
+.ring2{width:18px;height:18px;border-radius:50%;border:1.6px solid #8c8c8c;display:grid;place-items:center}
+.ring2 i{width:6px;height:6px;border-radius:50%;background:#8c8c8c}
 .rd{width:9px;height:9px;border-radius:50%;background:#f08a82;flex:none}
-.clk{font:400 18px 'Space Mono','JetBrains Mono',monospace;min-width:52px}
+.clk{font:400 18px 'JetBrains Mono',monospace;min-width:52px}
 .stop{margin-left:auto;margin-right:8px;width:30px;height:30px;border-radius:9px;background:#262626;display:grid;place-items:center}
 .stop i{width:10px;height:10px;border-radius:2px;background:#eaeaea}
-.keys{position:absolute;left:50%;top:360px;transform:translateX(-50%);display:flex;gap:14px;align-items:center}
-.key{min-width:92px;height:76px;border-radius:16px;background:#ededed;color:#0b0b0b;border-bottom:7px solid #b9b9b9;display:grid;place-items:center;font:600 24px 'Instrument Sans',sans-serif;padding:0 18px}
+.keys{position:absolute;left:50%;top:400px;transform:translateX(-50%);display:flex;gap:14px;align-items:center}
+.key{min-width:92px;height:76px;border-radius:16px;background:#ededed;color:#0a0a0b;border-bottom:7px solid #b9b9b9;display:grid;place-items:center;font:600 24px 'Instrument Sans',sans-serif;padding:0 18px}
 .plus{font:600 26px 'Instrument Sans';color:#3b3d37}
 .saved{color:#9dd6a4;font-weight:700}
-
-/* cursor */
-#cursor{position:absolute;left:0;top:0;z-index:60;width:26px;height:26px;opacity:0;will-change:transform}
-#ripple{position:absolute;z-index:59;width:44px;height:44px;border-radius:50%;border:3px solid rgba(255,255,255,.75);opacity:0;left:0;top:0}
+.notif{position:absolute;right:36px;top:34px;width:400px;background:rgba(20,20,22,.96);border:1px solid #2e2e31;border-radius:18px;padding:16px 18px;display:flex;gap:14px;align-items:center;box-shadow:0 20px 50px rgba(0,0,0,.35);color:#ededed}
+.notif .ic{width:42px;height:42px;border-radius:12px;background:#0e0e0e;display:grid;place-items:center;flex:none}
+.notif b{display:block;font:600 15px 'Instrument Sans',sans-serif}
+.notif span{display:block;font:12.5px 'JetBrains Mono',monospace;color:#a3a3a3;margin-top:3px}
 </style>
 </head>
 <body>
 <div id="stage">
 
+<div id="dots"><i></i><i></i><i></i><i></i><i></i></div>
+
 <!-- 0 title -->
 <div id="s0" class="scene center">
-  <svg width="120" height="120" viewBox="0 0 100 100" fill="none"><circle cx="50" cy="50" r="38" stroke="#ededed" stroke-width="5"/><polygon points="50,34 63.9,42 63.9,58 50,66 36.1,58 36.1,42" stroke="#ededed" stroke-width="5" stroke-linejoin="round"/><path d="M50 12v22M83 31l-19 11M83 69 64 58M50 88V66M17 69l19-11M17 31l19 11" stroke="#ededed" stroke-width="3.5" stroke-linecap="round" opacity=".6"/><circle cx="50" cy="50" r="5" fill="#f08a82"/></svg>
-  <h1 id="t0a">Install obscura</h1>
-  <p id="t0b">Five steps, about five minutes.</p>
+  <svg id="logo" width="132" height="132" viewBox="0 0 100 100" fill="none">
+    <circle id="lc" cx="50" cy="50" r="38" stroke="#ededed" stroke-width="5" pathLength="1" stroke-dasharray="1" stroke-dashoffset="1"/>
+    <polygon id="lh" points="50,34 63.9,42 63.9,58 50,66 36.1,58 36.1,42" stroke="#ededed" stroke-width="5" stroke-linejoin="round" pathLength="1" stroke-dasharray="1" stroke-dashoffset="1"/>
+    <path id="lb" d="M50 12v22M83 31l-19 11M83 69 64 58M50 88V66M17 69l19-11M17 31l19 11" stroke="#ededed" stroke-width="3.5" stroke-linecap="round" opacity="0"/>
+    <circle id="ld" cx="50" cy="50" r="5" fill="#f08a82" style="transform-origin:50px 50px;transform:scale(0)"/>
+  </svg>
+  <h1 id="t0a"></h1>
+  <p id="t0b"></p>
 </div>
 
-<!-- A OBS: real footage of OBS Studio, recorded on a private display -->
-<div id="sA" class="scene"><img id="obsimg" alt="" style="position:absolute;left:0;top:0;width:1280px;height:720px"></div>
+<!-- A real OBS footage -->
+<div id="sA" class="scene">
+  <div id="cam"><img id="obsimg" alt=""><div id="hl"></div></div>
+</div>
 
 <!-- B terminal -->
 <div id="sB" class="scene">
@@ -116,7 +112,7 @@ body{font:400 16px 'Instrument Sans',system-ui,sans-serif;color:#ededed}
 
 <!-- C editor: quickshell -->
 <div id="sC" class="scene">
-  <div class="win ed">
+  <div class="win ed" id="edC">
     <div class="tabs"><div class="tab on" id="tabTop">TopBar.qml<span class="sv" id="svTop"></span></div><div class="tab" id="tabShell">Shell.qml<span class="sv" id="svShell"></span></div></div>
     <div class="code" id="codeC"></div>
   </div>
@@ -124,10 +120,10 @@ body{font:400 16px 'Instrument Sans',system-ui,sans-serif;color:#ededed}
 
 <!-- D editor: hyprland -->
 <div id="sD" class="scene">
-  <div class="win ed">
+  <div class="win ed" id="edD">
     <div class="tabs"><div class="tab on">hyprland.conf<span class="sv" id="svHypr"></span></div></div>
     <div class="code" id="codeD"></div>
-    <div class="toast" id="toastD" style="opacity:0"><i></i>Hyprland reloaded your config</div>
+    <div class="toast" id="toastD" style="opacity:0"><i></i><span id="toastTxt"></span></div>
   </div>
 </div>
 
@@ -135,221 +131,319 @@ body{font:400 16px 'Instrument Sans',system-ui,sans-serif;color:#ededed}
 <div id="sE" class="scene">
   <div class="barstrip">
     <div class="op" id="op" style="width:48px">
-      <div class="lay" id="lIdle" style="justify-content:center;padding-left:0"><span class="ring"><i></i></span></div>
+      <div class="lay" id="lIdle" style="justify-content:center;padding-left:0"><span class="ring2"><i></i></span></div>
       <div class="lay" id="lRec" style="opacity:0"><span class="rd" id="rdot"></span><span class="clk" id="clk">00:00</span><span class="stop"><i></i></span></div>
-      <div class="lay" id="lSaved" style="opacity:0"><span class="saved">✓</span><span id="savedTxt">Saved</span></div>
+      <div class="lay" id="lSaved" style="opacity:0"><span class="saved">✓</span><span id="savedTxt"></span></div>
     </div>
     <div class="gp">Meet<b>2</b></div><div class="gp r"><i style="width:16px;height:16px;border-radius:50%;background:#9dd6a4;display:block"></i></div>
   </div>
   <div class="keys" id="keys"><div class="key" id="k1">Super</div><span class="plus">+</span><div class="key" id="k2">Alt</div><span class="plus">+</span><div class="key" id="k3">R</div></div>
+  <div class="notif" id="notif" style="opacity:0">
+    <div class="ic"><svg width="26" height="26" viewBox="0 0 100 100" fill="none"><circle cx="50" cy="50" r="38" stroke="#ededed" stroke-width="7"/><polygon points="50,34 63.9,42 63.9,58 50,66 36.1,58 36.1,42" stroke="#ededed" stroke-width="7" stroke-linejoin="round"/><circle cx="50" cy="50" r="7" fill="#f08a82"/></svg></div>
+    <div><b id="nTitle"></b><span>2026-10-09 22-20-14.mkv</span></div>
+  </div>
 </div>
 
 <!-- Z end -->
 <div id="sZ" class="scene center">
   <svg width="96" height="96" viewBox="0 0 100 100" fill="none"><circle cx="50" cy="50" r="38" stroke="#ededed" stroke-width="5"/><polygon points="50,34 63.9,42 63.9,58 50,66 36.1,58 36.1,42" stroke="#ededed" stroke-width="5" stroke-linejoin="round"/><path d="M50 12v22M83 31l-19 11M83 69 64 58M50 88V66M17 69l19-11M17 31l19 11" stroke="#ededed" stroke-width="3.5" stroke-linecap="round" opacity=".6"/><circle cx="50" cy="50" r="5" fill="#f08a82"/></svg>
-  <h1 id="tZa">That's it.</h1>
-  <p id="tZb">The pill is in your bar. OBS does the rest.</p>
+  <h1 id="tZa"></h1>
+  <p id="tZb"></p>
   <code>github.com/lunanoir21/obscura</code>
 </div>
 
-<div id="cap"><div class="main" id="capMain"></div><div class="sub" id="capSub"></div></div>
+<div id="cap"><div class="main"><span class="num" id="capNum"></span><span id="capMain"></span></div><div class="sub" id="capSub"></div></div>
 </div>
 
 <script>
 const LANG = new URLSearchParams(location.search).get('lang') === 'tr' ? 'tr' : 'en';
 const L = {
   en: {
-    t0a:'Install obscura', t0b:'Five steps, about five minutes.',
-    c1:'1 · Turn on OBS’s WebSocket server', c2:'2 · Build it and check the connection',
-    c3:'3 · Put the pill in your bar', c4:'4 · Bind a key', c5:'5 · Record from anywhere',
-    a1:'OBS → Tools → WebSocket Server Settings', a2:'Tick “Enable WebSocket server”. Port 4455 stays.', a3:'OBS wants a password to exist first: Generate Password.', a4:'Now untick “Enable Authentication”: obscura needs none.', a5:'OK. That’s all OBS needs.',
-    b1:'Clone and build with cargo', b2:'Put it on your PATH', b3:'doctor: “connection ok” means obscura can reach OBS',
-    cc1:'Your Quickshell config: import the module, add the pill', cc2:'Once in Shell.qml, for the screen-share picker (optional)',
-    d1:'Your Hyprland config (hyprland.conf)', d2:'Saved. Hyprland picks it up on its own.',
-    e1:'Press the shortcut: the pill opens and the dot lights', e2:'Press it again: saved. Works with the bar hidden too.',
-    saved:'Saved', tz1:'That’s it.', tz2:'The pill is in your bar. OBS does the rest.', ok:'Saved'
+    t0a: ['Install', 'obscura'], t0b: 'Five steps, about five minutes.',
+    c: ['Turn on OBS’s WebSocket server', 'Build it and check the connection', 'Put the pill in your bar', 'Bind a key', 'Record from anywhere'],
+    a1: 'OBS → Tools → WebSocket Server Settings', a2: 'Tick “Enable WebSocket server”. Port 4455 stays.', a3: 'OBS wants a password to exist first: Generate Password.', a4: 'Now untick “Enable Authentication”: obscura needs none.', a5: 'OK. That’s all OBS needs.',
+    b1: 'Clone and build with cargo', b2: 'Put it on your PATH', b3: 'doctor: “connection ok” means obscura can reach OBS',
+    cc1: 'Your Quickshell config: import the module, add the pill', cc2: 'Once in Shell.qml, for the screen-share picker (optional)',
+    d1: 'Your Hyprland config (hyprland.conf)', d2: 'Saved. Hyprland picks it up on its own.',
+    e1: 'Press the shortcut: the pill opens and the dot lights', e2: 'Press it again: saved, and a notification. Works with the bar hidden too.',
+    saved: 'Saved', savedTab: 'saved', toast: 'Hyprland reloaded your config', nt: 'Recording saved', tz1: ['That’s', 'it.'], tz2: 'The pill is in your bar. OBS does the rest.',
+    clipOffset: 0.45
   },
   tr: {
-    t0a:'obscura kurulumu', t0b:'Beş adım, yaklaşık beş dakika.',
-    c1:'1 · OBS’in WebSocket sunucusunu aç', c2:'2 · Derle ve bağlantıyı denetle',
-    c3:'3 · Hapı çubuğuna yerleştir', c4:'4 · Bir tuşa bağla', c5:'5 · Her yerden kaydet',
-    a1:'OBS → Araçlar → WebSocket Suncusu Ayarları', a2:'“WebSocket sunucuyu etkinleştir”i işaretle. Port 4455 kalsın.', a3:'OBS önce bir parola ister: Parola oluştur.', a4:'Şimdi “Kimlik Doğrulamasını Etkinleştir”i kapat: obscura’nın parolaya ihtiyacı kalmaz.', a5:'Tamam. OBS tarafı bu kadar.',
-    b1:'cargo ile klonla ve derle', b2:'PATH’ine koy', b3:'doctor: “connection ok”, obscura’nın OBS’e ulaştığı demek',
-    cc1:'Quickshell yapılandırman: modülü içe aktar, hapı ekle', cc2:'Shell.qml’de bir kez, ekran paylaşımı seçici için (isteğe bağlı)',
-    d1:'Hyprland yapılandırman (hyprland.conf)', d2:'Kaydedildi. Hyprland kendiliğinden yükler.',
-    e1:'Kısayola bas: hap açılır, nokta yanar', e2:'Tekrar bas: kaydedildi. Çubuk gizliyken de çalışır.',
-    saved:'Kaydedildi', tz1:'Hepsi bu.', tz2:'Hap çubuğunda. Gerisini OBS yapar.', ok:'Kaydedildi'
+    t0a: ['obscura', 'kurulumu'], t0b: 'Beş adım, yaklaşık beş dakika.',
+    c: ['OBS’in WebSocket sunucusunu aç', 'Derle ve bağlantıyı denetle', 'Hapı çubuğuna yerleştir', 'Bir tuşa bağla', 'Her yerden kaydet'],
+    a1: 'OBS → Araçlar → WebSocket Suncusu Ayarları', a2: '“WebSocket sunucuyu etkinleştir”i işaretle. Port 4455 kalsın.', a3: 'OBS önce bir parola ister: Parola oluştur.', a4: 'Şimdi “Kimlik Doğrulamasını Etkinleştir”i kapat: obscura’nın parolaya ihtiyacı kalmaz.', a5: 'Tamam. OBS tarafı bu kadar.',
+    b1: 'cargo ile klonla ve derle', b2: 'PATH’ine koy', b3: 'doctor: “connection ok”, obscura’nın OBS’e ulaştığı demek',
+    cc1: 'Quickshell yapılandırman: modülü içe aktar, hapı ekle', cc2: 'Shell.qml’de bir kez, ekran paylaşımı seçici için (isteğe bağlı)',
+    d1: 'Hyprland yapılandırman (hyprland.conf)', d2: 'Kaydedildi. Hyprland kendiliğinden yükler.',
+    e1: 'Kısayola bas: hap açılır, nokta yanar', e2: 'Tekrar bas: kaydedildi ve bildirim gelir. Çubuk gizliyken de çalışır.',
+    saved: 'Kaydedildi', savedTab: 'kaydedildi', toast: 'Hyprland yapılandırmayı yeniden yükledi', nt: 'Kayıt kaydedildi', tz1: ['Hepsi', 'bu.'], tz2: 'Hap çubuğunda. Gerisini OBS yapar.',
+    clipOffset: 0.55
   }
 }[LANG];
 document.documentElement.lang = LANG;
 
-const $ = s => document.querySelector(s);
+const $ = (s, r = document) => r.querySelector(s);
 const clamp = (x, a = 0, b = 1) => Math.min(b, Math.max(a, x));
-const ease = x => (x = clamp(x), x * x * (3 - 2 * x));
+const ease = x => (x = clamp(x), x < .5 ? 4 * x * x * x : 1 - Math.pow(-2 * x + 2, 3) / 2);
+const easeOut = x => 1 - Math.pow(1 - clamp(x), 3);
+const back = x => { x = clamp(x); const c1 = 1.9, c3 = c1 + 1; return 1 + c3 * Math.pow(x - 1, 3) + c1 * Math.pow(x - 1, 2); };
 const lerp = (a, b, k) => a + (b - a) * k;
 const typed = (s, lt, t0, cps) => s.slice(0, Math.max(0, Math.min(s.length, Math.floor((lt - t0) * cps))));
 const twoD = n => String(n).padStart(2, '0');
 const fmt = s => twoD(Math.floor(s / 60)) + ':' + twoD(Math.floor(s) % 60);
+const esc = s => s.replace(/&/g, '&amp;').replace(/</g, '&lt;');
+const win = (t, a, b) => clamp((t - a) / (b - a));
 
 /* ---- timeline ---- */
-const LEN = { s0: 3.6, sA: 19.6, sB: 14.2, sC: 13.2, sD: 8.8, sE: 9.8, sZ: 4.8 };
+const LEN = { s0: 4.2, sA: 24.2, sB: 15.0, sC: 13.6, sD: 9.4, sE: 10.4, sZ: 5.2 };
 let acc = 0;
 const SC = Object.entries(LEN).map(([id, l]) => { const a = acc; acc += l; return [id, a, acc]; });
-const START = Object.fromEntries(SC.map(r => [r[0], r[1]]));
-const END = Object.fromEntries(SC.map(r => [r[0], r[2]]));
 const DUR = acc;
-const rel = (id, a, b, text) => [START[id] + a, START[id] + b, text];
+const rel = (id, a, b, text) => [SC.find(r => r[0] === id)[1] + a, SC.find(r => r[0] === id)[1] + b, text];
+const STEP = { sA: 1, sB: 2, sC: 3, sD: 4, sE: 5 };
 
-const CAPS = [
-  [START.sA, END.sA, L.c1], [START.sB, END.sB, L.c2], [START.sC, END.sC, L.c3], [START.sD, END.sD, L.c4], [START.sE, END.sE, L.c5]
-];
-const SUBS = [
-  rel('sA', 0.5, 5.3, L.a1), rel('sA', 6.2, 10.8, L.a2), rel('sA', 11.0, 14.4, L.a3), rel('sA', 14.8, 17.6, L.a4), rel('sA', 18.0, 19.5, L.a5),
-  rel('sB', 0.6, 6.4, L.b1), rel('sB', 6.4, 9.4, L.b2), rel('sB', 10.0, 14.0, L.b3),
-  rel('sC', 0.6, 7.0, L.cc1), rel('sC', 7.6, 13.0, L.cc2),
-  rel('sD', 0.4, 5.0, L.d1), rel('sD', 5.8, 8.6, L.d2),
-  rel('sE', 0.8, 5.0, L.e1), rel('sE', 5.2, 9.6, L.e2)
-];
-
-/* The OBS clip: frame n is at (n-1)/30 s of the clip; the clip's own t=0.65 s is when the
-   recorder's script clock started, so scene time == script time. */
+/* script times of the recorded clip (clips/obs-<lang>-events.json); scene time == script time */
+const EV = LANG === 'tr'
+  ? { tools: 3.236, ws: 6.607, enable: 11.03, gen: 14.933, auth: 18.483, ok: 22.34 }
+  : { tools: 3.193, ws: 6.447, enable: 10.414, gen: 14.085, auth: 17.675, ok: 21.574 };
 const FRAMES = new URLSearchParams(location.search).get('frames') || '';
-const CLIP_OFFSET = 0.65;
+const CLIP_OFFSET = L.clipOffset;
+const CLIP_FPS = 60;
+
+const SUBS = [
+  rel('sA', 0.8, EV.ws - 0.1, L.a1), rel('sA', EV.ws + 0.9, EV.enable + 1.2, L.a2), rel('sA', EV.gen - 1.3, EV.gen + 1.5, L.a3), rel('sA', EV.auth - 1.3, EV.auth + 1.6, L.a4), rel('sA', EV.ok - 1.0, LEN.sA - 0.5, L.a5),
+  rel('sB', 0.6, 6.6, L.b1), rel('sB', 6.8, 10.0, L.b2), rel('sB', 10.6, 14.6, L.b3),
+  rel('sC', 0.6, 7.2, L.cc1), rel('sC', 7.8, 13.2, L.cc2),
+  rel('sD', 0.4, 5.2, L.d1), rel('sD', 6.0, 9.0, L.d2),
+  rel('sE', 0.8, 5.4, L.e1), rel('sE', 5.6, 10.0, L.e2)
+];
+
+/* ---- scene 0 / Z ---- */
+function words(el, parts, lt, t0) {
+  if (!el.dataset.built) { el.innerHTML = parts.map(w => '<span>' + esc(w) + '</span>').join(''); el.dataset.built = '1'; }
+  [...el.children].forEach((sp, i) => { const k = easeOut((lt - t0 - i * 0.14) / 0.7); sp.style.opacity = k; sp.style.transform = 'translateY(' + ((1 - k) * 26) + 'px)'; });
+}
+function scene0(lt) {
+  $('#lc').style.strokeDashoffset = 1 - easeOut(lt / 1.2);
+  $('#lh').style.strokeDashoffset = 1 - easeOut((lt - 0.25) / 1.1);
+  $('#lb').style.opacity = 0.6 * easeOut((lt - 0.8) / 0.6);
+  $('#ld').style.transform = 'scale(' + back((lt - 1.1) / 0.6) + ')';
+  words($('#t0a'), L.t0a, lt, 0.9);
+  const k = easeOut((lt - 1.6) / 0.7); $('#t0b').style.opacity = k; $('#t0b').style.transform = 'translateY(' + ((1 - k) * 14) + 'px)';
+}
+function sceneZ(lt) {
+  words($('#tZa'), L.tz1, lt, 0.2);
+  [['#tZb', 0.9], ['#sZ code', 1.3]].forEach(([s, t0]) => { const k = easeOut((lt - t0) / 0.7); $(s).style.opacity = k; $(s).style.transform = 'translateY(' + ((1 - k) * 14) + 'px)'; });
+}
+
+/* ---- scene A: real OBS footage with a moving camera ---- */
+const P = LANG === 'tr' ? { tools: [417, 12], item: [483, 169] } : { tools: [326, 12], item: [387, 169] };
+/* [t, scale, cx, cy]: (cx, cy) is the point of the clip (1280x720 space) at the middle of the view */
+const CAM = [
+  [0, 1.0, 640, 360],
+  [EV.tools - 1.1, 1.0, 640, 360],
+  [EV.tools - 0.2, 1.3, 400, 140],
+  [EV.ws + 0.2, 1.3, 440, 170],
+  [EV.ws + 1.5, 1.08, 660, 380],
+  [EV.enable - 1.2, 1.08, 660, 380],
+  [EV.enable - 0.1, 1.28, 600, 200],
+  [EV.gen - 1.2, 1.28, 640, 250],
+  [EV.gen - 0.1, 1.28, 760, 300],
+  [EV.auth - 1.2, 1.28, 700, 320],
+  [EV.auth - 0.1, 1.28, 620, 290],
+  [EV.ok - 1.4, 1.2, 680, 480],
+  [EV.ok - 0.1, 1.28, 710, 560],
+  [EV.ok + 1.0, 1.0, 640, 360]
+];
+function camAt(t) {
+  let a = CAM[0], b = CAM[CAM.length - 1];
+  for (let i = 0; i < CAM.length - 1; i++) if (t >= CAM[i][0] && t <= CAM[i + 1][0]) { a = CAM[i]; b = CAM[i + 1]; break; }
+  if (t <= CAM[0][0]) b = a; else if (t >= CAM[CAM.length - 1][0]) a = b;
+  const k = a === b ? 1 : ease((t - a[0]) / (b[0] - a[0]));
+  return [lerp(a[1], b[1], k), lerp(a[2], b[2], k), lerp(a[3], b[3], k)];
+}
+/* drawn over the footage, in clip space (css px = recorded px / 1.5) */
+const HL = [
+  { at: EV.tools, x: P.tools[0], y: P.tools[1], box: [P.tools[0] - 26, 3, 52, 24] },
+  { at: EV.ws, x: P.item[0], y: P.item[1], box: [P.item[0] - 130, P.item[1] - 14, 260, 28] },
+  { at: EV.enable, x: 501, y: 139, box: [483, 125, 180, 28] },
+  { at: EV.gen, x: 857, y: 327, box: [789, 313, 138, 28] },
+  { at: EV.auth, x: 501, y: 296, box: [483, 284, 160, 24] },
+  { at: EV.ok, x: 725, y: 604, box: [692, 590, 66, 28] }
+];
+const hlEl = $('#hl');
+HL.forEach((h, i) => {
+  const r = document.createElement('div'); r.className = 'ring'; r.id = 'rg' + i; hlEl.appendChild(r);
+  const b = document.createElement('div'); b.className = 'box'; b.id = 'bx' + i; b.style.cssText = 'left:' + h.box[0] + 'px;top:' + h.box[1] + 'px;width:' + h.box[2] + 'px;height:' + h.box[3] + 'px'; hlEl.appendChild(b);
+});
+function sceneA(lt) {
+  const n = Math.max(1, Math.floor((lt + CLIP_OFFSET) * CLIP_FPS) + 1);
+  const src = FRAMES + '/' + String(n).padStart(5, '0') + '.jpg';
+  const img = $('#obsimg');
+  if (img.dataset.src !== src) { img.dataset.src = src; img.src = src; }
+  const [s, cx, cy] = camAt(lt);
+  let tx = 640 - s * cx, ty = 360 - s * cy;
+  tx = clamp(tx, 1280 - 1280 * s, 0); ty = clamp(ty, 720 - 720 * s, 0);
+  $('#cam').style.transform = 'translate(' + tx + 'px,' + ty + 'px) scale(' + s + ')';
+  HL.forEach((h, i) => {
+    const age = lt - h.at, r = $('#rg' + i), b = $('#bx' + i);
+    if (age >= 0 && age < 0.7) { const k = age / 0.7, d = 20 + k * 60; r.style.cssText = 'left:' + (h.x - d / 2) + 'px;top:' + (h.y - d / 2) + 'px;width:' + d + 'px;height:' + d + 'px;opacity:' + (0.9 * (1 - k)); } else r.style.opacity = 0;
+    b.style.opacity = (win(lt, h.at - 0.9, h.at - 0.4) * (1 - win(lt, h.at + 0.2, h.at + 0.8))).toFixed(3);
+  });
+}
+window.ready = () => { const img = $('#obsimg'); if (!img.getAttribute('src')) return Promise.resolve(); return img.complete ? Promise.resolve() : new Promise(r => { img.onload = img.onerror = () => r(); }); };
 
 /* ---- terminal ---- */
 const TERM = [
-  { type: 'c', t: 0.8, text: 'git clone https://github.com/lunanoir21/obscura', cps: 40 },
-  { type: 'o', t: 2.8, text: "Cloning into 'obscura'..." },
-  { type: 'c', t: 3.6, text: 'cd obscura && cargo build --release', cps: 40 },
-  { type: 'o', t: 5.4, text: '   Compiling obscura-core v0.1.0' },
-  { type: 'o', t: 6.3, text: '   Compiling obscura v0.1.0' },
-  { type: 'o', t: 7.6, text: '    Finished `release` profile [optimized] target(s) in 14.81s' },
-  { type: 'c', t: 8.6, text: 'ln -s "$PWD/target/release/obscura" ~/.local/bin/obscura', cps: 60 },
-  { type: 'c', t: 10.2, text: 'obscura doctor', cps: 18 },
-  { type: 'o', t: 11.4, parts: [['target      ', '#a3a3a3'], ['127.0.0.1:4455', '#ededed']] },
-  { type: 'o', t: 11.7, parts: [['password    ', '#a3a3a3'], ['found', '#ededed']] },
-  { type: 'o', t: 12.0, parts: [['connection  ', '#a3a3a3'], ['ok', '#9dd6a4']] },
-  { type: 'o', t: 12.3, parts: [['recording   ', '#a3a3a3'], ['false', '#ededed']] }
+  { type: 'c', t: 0.9, text: 'git clone https://github.com/lunanoir21/obscura', cps: 34 },
+  { type: 'o', t: 3.0, text: "Cloning into 'obscura'..." },
+  { type: 'c', t: 3.9, text: 'cd obscura && cargo build --release', cps: 34 },
+  { type: 'o', t: 5.7, text: '   Compiling obscura-core v0.1.0' },
+  { type: 'o', t: 6.8, text: '   Compiling obscura v0.1.0' },
+  { type: 'o', t: 8.4, text: '    Finished `release` profile [optimized] target(s) in 14.81s' },
+  { type: 'c', t: 9.2, text: 'ln -s "$PWD/target/release/obscura" ~/.local/bin/obscura', cps: 60 },
+  { type: 'c', t: 10.8, text: 'obscura doctor', cps: 16 },
+  { type: 'o', t: 12.0, parts: [['target      ', '#a3a3a3'], ['127.0.0.1:4455', '#ededed']] },
+  { type: 'o', t: 12.3, parts: [['password    ', '#a3a3a3'], ['none', '#ededed']] },
+  { type: 'o', t: 12.6, parts: [['connection  ', '#a3a3a3'], ['ok', '#9dd6a4']], glow: true },
+  { type: 'o', t: 12.9, parts: [['recording   ', '#a3a3a3'], ['false', '#ededed']] }
 ];
-const TL = 26;
-const tl = $('#tlines');
-TERM.forEach((r, i) => { const d = document.createElement('div'); d.className = 'ln'; d.style.top = (58 + i * TL) + 'px'; d.id = 'tl' + i; tl.appendChild(d); });
-const tend = document.createElement('div'); tend.className = 'ln'; tend.id = 'tend'; tend.style.top = (58 + TERM.length * TL) + 'px'; tl.appendChild(tend);
-const esc = s => s.replace(/&/g, '&amp;').replace(/</g, '&lt;');
+const TL = 26, TOP = 58;
+const tlEl = $('#tlines');
+TERM.forEach((r, i) => { const d = document.createElement('div'); d.className = 'ln'; d.style.top = (TOP + i * TL) + 'px'; d.id = 'tl' + i; tlEl.appendChild(d); });
+const prog = document.createElement('div'); prog.className = 'ln'; prog.id = 'tprog'; prog.style.top = (TOP + 5 * TL) + 'px'; tlEl.appendChild(prog);
+const tend = document.createElement('div'); tend.className = 'ln'; tend.id = 'tend'; tend.style.top = (TOP + TERM.length * TL) + 'px'; tlEl.appendChild(tend);
+const jitter = i => ((Math.sin(i * 12.9898) * 43758.5453) % 1 + 1) % 1;
 
+/* a typed command: slower after spaces, so it reads like a person */
+function typedHuman(full, lt, t0, cps) {
+  let t = t0, n = 0;
+  for (let i = 0; i < full.length; i++) {
+    const ch = full[i];
+    t += (1 / cps) * (0.7 + jitter(i) * 0.7) * (ch === ' ' ? 1.5 : 1) + (ch === ' ' && jitter(i + 7) > 0.8 ? 0.06 : 0);
+    if (lt >= t) n = i + 1; else break;
+  }
+  return [full.slice(0, n), t];
+}
 function termScene(lt) {
-  let cursorRow = -1, cursorCol = 0;
+  const w = $('#term'), k = easeOut(lt / 0.8);
+  w.style.transform = 'scale(' + lerp(0.94, 1, k) + ') translateY(' + ((1 - k) * 18) + 'px)';
+  let cursorRow = -1;
   TERM.forEach((r, i) => {
     const el = $('#tl' + i);
-    if (lt < r.t) { el.innerHTML = ''; return; }
+    if (lt < r.t) { el.innerHTML = ''; el.style.opacity = 0; return; }
+    const slide = easeOut((lt - r.t) / 0.28);
     if (r.type === 'c') {
-      const full = r.text, shown = typed(full, lt, r.t, r.cps);
+      const [shown, doneAt] = typedHuman(r.text, lt, r.t, r.cps);
+      el.style.opacity = 1; el.style.transform = 'none';
       el.innerHTML = '<span style="color:#6e6e6e">$ </span><span style="color:#ededed">' + esc(shown) + '</span>';
-      if (shown.length < full.length || lt < r.t + full.length / r.cps + 0.5) { cursorRow = i; cursorCol = shown.length; }
-    } else if (r.parts) {
-      el.innerHTML = r.parts.map(p => '<span style="color:' + p[1] + '">' + esc(p[0]) + '</span>').join('');
-    } else el.innerHTML = esc(r.text);
+      if (shown.length < r.text.length || lt < doneAt + 0.5) cursorRow = i;
+    } else {
+      el.style.opacity = slide; el.style.transform = 'translateY(' + ((1 - slide) * 8) + 'px)';
+      if (r.parts) {
+        const glow = r.glow ? Math.max(0, 1 - (lt - r.t) / 0.9) : 0;
+        el.innerHTML = r.parts.map(p => '<span style="color:' + p[1] + (r.glow && p[1] === '#9dd6a4' ? ';text-shadow:0 0 ' + (14 * glow).toFixed(1) + 'px rgba(157,214,164,' + (0.9 * glow).toFixed(2) + ')' : '') + '">' + esc(p[0]) + '</span>').join('');
+      } else el.innerHTML = esc(r.text);
+    }
   });
-  const endAt = 12.8;
-  tend.innerHTML = lt > endAt ? '<span style="color:#6e6e6e">$ </span><span class="cur" style="opacity:' + (Math.floor(lt * 2) % 2 ? 0 : 1) + '"></span>' : '';
-  if (cursorRow >= 0) {
-    const el = $('#tl' + cursorRow);
-    el.insertAdjacentHTML('beforeend', '<span class="cur" style="margin-left:1px"></span>');
-  }
+  const ps = 5.9, pe = 8.35;       // cargo's progress bar, between the Compiling lines and Finished
+  if (lt >= ps && lt < pe) {
+    const f = win(lt, ps, pe), cells = 22, filled = Math.floor(f * cells);
+    prog.innerHTML = '<span style="color:#6e6e6e">    Building [' + '='.repeat(Math.max(0, filled - 1)) + (filled ? '>' : '') + ' '.repeat(cells - filled) + '] ' + Math.min(2, Math.floor(f * 3)) + '/2</span>';
+  } else prog.innerHTML = '';
+  tend.innerHTML = lt > 13.3 ? '<span style="color:#6e6e6e">$ </span><span class="cur" style="opacity:' + (Math.floor(lt * 2) % 2 ? 0 : 1) + '"></span>' : '';
+  if (cursorRow >= 0) $('#tl' + cursorRow).insertAdjacentHTML('beforeend', '<span class="cur" style="margin-left:1px"></span>');
 }
 
 /* ---- editors ---- */
 function mkLines(host, n) { const h = $(host); for (let i = 0; i < n; i++) { const d = document.createElement('div'); d.className = 'cl'; d.style.top = (i * 27) + 'px'; h.appendChild(d); } return [...h.children]; }
 const CL = mkLines('#codeC', 17), DL = mkLines('#codeD', 17);
-const hl = s => s.replace(/(#.*$)|("[^"]*")|\b(import|bind)\b|([^#"]+?(?=#|"|\b(?:import|bind)\b|$))/g, (m, c, q, k, o) =>
+const hlz = s => s.replace(/(#.*$)|("[^"]*")|\b(import|bind)\b|([^#"]+?(?=#|"|\b(?:import|bind)\b|$))/g, (m, c, q, k) =>
   c ? '<span class="c">' + esc(c) + '</span>' : q ? '<span class="s">' + esc(q) + '</span>' : k ? '<span class="k">' + k + '</span>' : esc(m));
-
-/* TopBar.qml */
-const TOP = [
+const TOPF = [
   { n: 1, text: 'import QtQuick' }, { n: 2, text: 'import Quickshell' },
   { n: 3, text: 'import "../vendor/meet/ui" as MeetModule' },
-  { n: 4, text: 'import "../vendor/obscura/ui" as ObscuraModule', add: true, t: 1.4, cps: 48 },
+  { n: 4, text: 'import "../vendor/obscura/ui" as ObscuraModule', add: true, t: 1.4, cps: 44 },
   { n: 5, text: '' }, { n: 6, text: 'Row {' }, { n: 7, text: '    id: rightContent' }, { n: 8, text: '    spacing: barWindow.s(4)' }, { n: 9, text: '' },
-  { n: 10, text: '    ObscuraModule.ObscuraPill {', add: true, t: 3.6, cps: 44 },
-  { n: 11, text: '        pal: mocha', add: true, t: 4.7, cps: 44 },
-  { n: 12, text: '        u: barWindow.s(1)', add: true, t: 5.4, cps: 44 },
-  { n: 13, text: '    }', add: true, t: 6.2, cps: 44 },
+  { n: 10, text: '    ObscuraModule.ObscuraPill {', add: true, t: 3.8, cps: 40 },
+  { n: 11, text: '        pal: mocha', add: true, t: 5.0, cps: 40 },
+  { n: 12, text: '        u: barWindow.s(1)', add: true, t: 5.8, cps: 40 },
+  { n: 13, text: '    }', add: true, t: 6.6, cps: 40 },
   { n: 14, text: '' }, { n: 15, text: '    MeetModule.MeetPill {' }, { n: 16, text: '        pal: mocha' }, { n: 17, text: '    }' }
 ];
-/* Shell.qml */
-const SHELL = [
+const SHELLF = [
   { n: 1, text: 'import QtQuick' }, { n: 2, text: 'import Quickshell' },
   { n: 3, text: 'import "vendor/flare/ui" as FlareModule' },
-  { n: 4, text: 'import "vendor/obscura/ui" as ObscuraModule', add: true, t: 8.4, cps: 48 },
+  { n: 4, text: 'import "vendor/obscura/ui" as ObscuraModule', add: true, t: 8.6, cps: 44 },
   { n: 5, text: '' }, { n: 6, text: 'ShellRoot {' }, { n: 7, text: '    Main {}' }, { n: 8, text: '    TopBar {}' },
   { n: 9, text: '    FlareModule.FlareHost {}' },
-  { n: 10, text: '    ObscuraModule.ObscuraPickerHost {}', add: true, t: 10.0, cps: 44 },
+  { n: 10, text: '    ObscuraModule.ObscuraPickerHost {}', add: true, t: 10.2, cps: 40 },
   { n: 11, text: '}' }
 ];
 const HYPR = [
   { n: 1, text: 'source = ~/.config/hypr/colors.conf' }, { n: 2, text: '' },
   { n: 3, text: 'bind = CTRL SHIFT, S, exec, grimblast --notify copy area' },
   { n: 4, text: 'bind = SUPER, T, exec, kitty' }, { n: 5, text: '' },
-  { n: 6, text: '# obscura (OBS recording)', add: true, t: 1.0, cps: 40 },
-  { n: 7, text: 'bind = SUPER ALT, R, exec, obscura toggle', add: true, t: 2.2, cps: 40 },
-  { n: 8, text: 'bind = SUPER ALT SHIFT, R, exec, obscura pause', add: true, t: 3.8, cps: 40 }
+  { n: 6, text: '# obscura (OBS recording)', add: true, t: 1.0, cps: 38 },
+  { n: 7, text: 'bind = SUPER ALT, R, exec, obscura toggle', add: true, t: 2.4, cps: 38 },
+  { n: 8, text: 'bind = SUPER ALT SHIFT, R, exec, obscura pause', add: true, t: 4.2, cps: 38 }
 ];
-function paintCode(lines, rows, lt, tab) {
+function paintCode(lines, rows, lt, savedAt) {
   lines.forEach((el, i) => {
     const r = rows[i];
-    if (!r || (r.add && lt < r.t)) { el.innerHTML = ''; el.classList.remove('add'); return; }
+    if (!r || (r.add && lt < r.t)) { el.innerHTML = ''; el.style.background = 'transparent'; return; }
     const shown = r.add ? typed(r.text, lt, r.t, r.cps) : r.text;
-    el.classList.toggle('add', !!r.add && shown.length > 0);
-    el.innerHTML = '<i>' + r.n + '</i>' + hl(shown) + ((r.add && shown.length < r.text.length) ? '<span class="cur" style="height:16px;margin-left:1px"></span>' : '');
+    let bg = 'transparent';
+    if (r.add && shown.length > 0) {
+      bg = 'rgba(157,214,164,.09)';
+      if (lt >= savedAt) bg = 'rgba(157,214,164,' + (0.09 + 0.22 * Math.max(0, 1 - (lt - savedAt) / 0.8)).toFixed(3) + ')';
+    }
+    el.style.background = bg;
+    el.innerHTML = '<i>' + r.n + '</i>' + hlz(shown) + ((r.add && shown.length < r.text.length) ? '<span class="cur" style="height:16px;margin-left:1px"></span>' : '');
   });
 }
+function pop(el, lt, t0) { el.style.transform = 'scale(' + (lt < t0 ? 1 : lerp(1.5, 1, clamp(back((lt - t0) / 0.5), 0, 1.2))) + ')'; }
 function sceneC(lt) {
-  const onShell = lt >= 7.0;
+  const onShell = lt >= 7.4;
   $('#tabTop').classList.toggle('on', !onShell); $('#tabShell').classList.toggle('on', onShell);
-  const hostA = $('#codeC');
-  paintCode(CL, onShell ? SHELL : TOP, lt, onShell ? 'shell' : 'top');
-  $('#svTop').textContent = lt >= 7.0 || (lt >= 6.8) ? '  ✓ ' + L.saved.toLowerCase() : (lt > 1.4 ? '  ●' : '');
-  $('#svTop').style.color = lt >= 6.8 ? '#9dd6a4' : '#e3cd92';
-  $('#svShell').textContent = lt >= 11.6 ? '  ✓ ' + L.saved.toLowerCase() : (lt > 8.4 ? '  ●' : '');
-  $('#svShell').style.color = lt >= 11.6 ? '#9dd6a4' : '#e3cd92';
+  paintCode(CL, onShell ? SHELLF : TOPF, lt, onShell ? 11.8 : 7.0);
+  const st = (el, a, b) => { el.textContent = lt >= b ? '✓ ' + L.savedTab : (lt > a ? '●' : ''); el.style.color = lt >= b ? '#9dd6a4' : '#e3cd92'; };
+  st($('#svTop'), 1.4, 7.0); st($('#svShell'), 8.6, 11.8);
+  pop($('#svTop'), lt, 7.0); pop($('#svShell'), lt, 11.8);
+  const k = easeOut(lt / 0.8);
+  const zoom = lt < 7.4 ? 1 + 0.07 * ease(win(lt, 1.0, 2.2)) * (1 - ease(win(lt, 6.8, 7.6))) : 1 + 0.07 * ease(win(lt, 8.2, 9.4)) * (1 - ease(win(lt, 12.2, 13.0)));
+  const w = $('#edC'); w.style.transformOrigin = '300px 200px';
+  w.style.transform = 'scale(' + (lerp(0.95, 1, k) * zoom) + ') translateY(' + ((1 - k) * 16) + 'px)';
 }
 function sceneD(lt) {
-  paintCode(DL, HYPR, lt, 'h');
-  $('#svHypr').textContent = lt >= 5.6 ? '  ✓ ' + L.saved.toLowerCase() : (lt > 1.0 ? '  ●' : '');
-  $('#svHypr').style.color = lt >= 5.6 ? '#9dd6a4' : '#e3cd92';
-  $('#toastD').style.opacity = lt >= 6.2 && lt < 8.6 ? 1 : 0;
+  paintCode(DL, HYPR, lt, 6.0);
+  $('#svHypr').textContent = lt >= 6.0 ? '✓ ' + L.savedTab : (lt > 1.0 ? '●' : '');
+  $('#svHypr').style.color = lt >= 6.0 ? '#9dd6a4' : '#e3cd92';
+  pop($('#svHypr'), lt, 6.0);
+  const t = $('#toastD'), tk = easeOut((lt - 6.6) / 0.45) * (1 - win(lt, 8.6, 9.1));
+  $('#toastTxt').textContent = L.toast; t.style.opacity = tk; t.style.transform = 'translateY(' + ((1 - tk) * -14) + 'px)';
+  const w = $('#edD'), k = easeOut(lt / 0.8);
+  w.style.transformOrigin = '300px 260px';
+  w.style.transform = 'scale(' + (lerp(0.95, 1, k) * (1 + 0.07 * ease(win(lt, 0.8, 2.0)) * (1 - ease(win(lt, 5.6, 6.4))))) + ') translateY(' + ((1 - k) * 16) + 'px)';
 }
-
-/* ---- OBS scene (real footage) ---- */
-function sceneA(lt) {
-  const n = Math.max(1, Math.floor((lt + CLIP_OFFSET) * 30) + 1);
-  const src = FRAMES + '/' + String(n).padStart(5, '0') + '.jpg';
-  const img = $('#obsimg');
-  if (img.dataset.src !== src) { img.dataset.src = src; img.src = src; }
-}
-window.ready = () => { const img = $('#obsimg'); if (!img.getAttribute('src')) return Promise.resolve(); return img.complete ? Promise.resolve() : new Promise(r => { img.onload = img.onerror = () => r(); }); };
 
 /* ---- result ---- */
 function sceneE(lt) {
-  const rec = lt >= 3.2 && lt < 8.0;          // keys pressed at 1.2 and 7.0 are drawn below
-  const press1 = lt >= 1.2 && lt < 1.6, press2 = lt >= 7.0 && lt < 7.4;
-  const phase = lt < 1.5 ? 'idle' : lt < 7.2 ? 'rec' : lt < 9.4 ? 'saved' : 'idle';
-  const op = $('#op');
-  op.style.width = (phase === 'rec' ? 156 : phase === 'saved' ? 132 : 48) + 'px';
-  op.style.transition = 'none';
-  // width eases by hand so frames are deterministic
+  const press1 = lt >= 1.2 && lt < 1.6, press2 = lt >= 7.4 && lt < 7.8;
+  const phase = lt < 1.5 ? 'idle' : lt < 7.6 ? 'rec' : lt < 10.2 ? 'saved' : 'idle';
   const target = phase === 'rec' ? 156 : phase === 'saved' ? 132 : 48;
-  const start = lt < 1.5 ? 0 : lt < 7.2 ? 1.5 : lt < 9.4 ? 7.2 : 9.4;
+  const start = lt < 1.5 ? 0 : lt < 7.6 ? 1.5 : lt < 10.2 ? 7.6 : 10.2;
   const prev = phase === 'rec' ? 48 : phase === 'saved' ? 156 : 132;
-  op.style.width = lerp(prev, target, ease((lt - start) / 0.45)) + 'px';
-  $('#lIdle').style.opacity = phase === 'idle' ? 1 : 0;
-  $('#lRec').style.opacity = phase === 'rec' ? 1 : 0;
-  $('#lSaved').style.opacity = phase === 'saved' ? 1 : 0;
+  $('#op').style.width = lerp(prev, target, easeOut((lt - start) / 0.55)) + 'px';
+  const fade = (id, on) => { $(id).style.opacity = on ? 1 : 0; };
+  fade('#lIdle', phase === 'idle'); fade('#lRec', phase === 'rec'); fade('#lSaved', phase === 'saved');
   $('#rdot').style.opacity = Math.floor(lt * 1.25) % 2 ? 0.4 : 1;
-  $('#clk').textContent = fmt(Math.max(0, lt - 1.6));
-  $('#savedTxt').textContent = L.ok;
-  const keys = [$('#k1'), $('#k2'), $('#k3')];
-  keys.forEach(k => { const p = press1 || press2; k.style.transform = p ? 'translateY(6px)' : 'none'; k.style.borderBottomWidth = p ? '1px' : '7px'; });
+  $('#clk').textContent = fmt(Math.max(0, lt - 1.8));
+  $('#savedTxt').textContent = L.saved;
+  ['#k1', '#k2', '#k3'].forEach(s => { const k = $(s), p = press1 || press2; k.style.transform = p ? 'translateY(6px) scale(.98)' : 'none'; k.style.borderBottomWidth = p ? '1px' : '7px'; });
+  const nk = easeOut((lt - 8.0) / 0.5) * (1 - win(lt, 9.9, 10.3));
+  const n = $('#notif'); $('#nTitle').textContent = L.nt; n.style.opacity = nk; n.style.transform = 'translateX(' + ((1 - nk) * 60) + 'px)';
 }
 
 function seek(t) {
@@ -357,28 +451,36 @@ function seek(t) {
   for (const [id, a, b] of SC) {
     const el = $('#' + id), on = t >= a && t < b;
     el.style.visibility = on ? 'visible' : 'hidden';
-    const op = on ? Math.min(ease((t - a) / 0.45), ease((b - t) / 0.45)) : 0;
-    el.style.opacity = (id === 's0' && t < 0.45) ? 1 : op;
+    const k = on ? Math.min(easeOut((t - a) / 0.5), easeOut((b - t) / 0.5)) : 0;
+    el.style.opacity = (id === 's0' && t < 0.3) ? 1 : k;
+    if (id === 's0' || id === 'sE' || id === 'sZ') el.style.transform = on ? 'scale(' + lerp(0.985, 1, k) + ')' : 'none';
     if (on) {
       const lt = t - a;
+      if (id === 's0') scene0(lt);
       if (id === 'sA') sceneA(lt);
       if (id === 'sB') termScene(lt);
       if (id === 'sC') sceneC(lt);
       if (id === 'sD') sceneD(lt);
       if (id === 'sE') sceneE(lt);
+      if (id === 'sZ') sceneZ(lt);
     }
   }
-  $('#t0a').textContent = L.t0a; $('#t0b').textContent = L.t0b; $('#tZa').textContent = L.tz1; $('#tZb').textContent = L.tz2;
-  // captions
-  const cap = CAPS.find(c => t >= c[0] && t < c[1]);
+  const cur = SC.find(r => t >= r[1] && t < r[2]);
+  const step = cur ? STEP[cur[0]] || 0 : 0;
+  const dots = $('#dots');
+  dots.style.opacity = step ? Math.min(easeOut((t - cur[1]) / 0.5), easeOut((cur[2] - t) / 0.4)) : 0;
+  [...dots.children].forEach((d, i) => { d.className = i + 1 <= step ? 'on' : ''; d.style.width = (i + 1 === step ? 26 : 8) + 'px'; });
   const capEl = $('#cap');
-  if (cap) {
-    $('#capMain').textContent = cap[2];
-    capEl.style.opacity = Math.min(ease((t - cap[0]) / 0.4), ease((cap[1] - t) / 0.3));
+  if (step) {
+    $('#capNum').textContent = step; $('#capMain').textContent = L.c[step - 1];
+    const k = Math.min(easeOut((t - cur[1] - 0.15) / 0.55), easeOut((cur[2] - t) / 0.35));
+    capEl.style.opacity = k; $('.main', capEl).style.transform = 'translateY(' + ((1 - k) * 16) + 'px)';
   } else capEl.style.opacity = 0;
   const sub = SUBS.find(s => t >= s[0] && t < s[1]);
-  $('#capSub').textContent = sub ? sub[2] : '';
-  $('#capSub').style.opacity = sub ? Math.min(ease((t - sub[0]) / 0.3), ease((sub[1] - t) / 0.25)) : 0;
+  const se = $('#capSub');
+  se.textContent = sub ? sub[2] : '';
+  const sk = sub ? Math.min(easeOut((t - sub[0]) / 0.35), easeOut((sub[1] - t) / 0.3)) : 0;
+  se.style.opacity = sk; se.style.transform = 'translateY(' + ((1 - sk) * 8) + 'px)';
 }
 window.seek = seek; window.DUR = DUR;
 seek(0);

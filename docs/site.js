@@ -13,17 +13,48 @@
   $("#theme").addEventListener("click", () => {
     root.dataset.theme = root.dataset.theme === "dark" ? "light" : "dark";
     store.set("obscura-theme", root.dataset.theme);
-    shotsFor(root.dataset.theme);
+    shotsFor(root.dataset.theme, root.lang);
   });
 
-  /* ── screenshots follow the theme ── */
-  function shotsFor(theme) {
-    $$("img[data-light]").forEach(img => {
-      if (!img.dataset.dark) img.dataset.dark = img.getAttribute("src");
-      img.src = theme === "light" ? img.dataset.light : img.dataset.dark;
+  /* ── screenshots follow the theme and the language ── */
+  function shotsFor(theme, lang) {
+    $$("img[data-shot], .gallery img").forEach(img => {
+      if (!img.dataset.shot) img.dataset.shot = (img.getAttribute("src").match(/([a-z-]+)\.png$/) || [])[1] || "";
+      if (!img.dataset.shot) return;
+      img.src = "screenshots/" + (lang === "tr" ? "tr/" : "") + (theme === "light" ? "light/" : "") + img.dataset.shot + ".png";
     });
   }
-  shotsFor(root.dataset.theme);
+
+  /* ── the redrawn panel and picker: Turkish in the markup, English by default ── */
+  const MOCK = {
+    "Kontrol": "Control", "Kayıt": "Recording", "Görünüm": "Look", "OBS · bağlı": "OBS · connected", "Hazır": "Ready",
+    "Kaydı başlat": "Start recording", "Sahne": "Scene", "Ses kaynakları": "Audio sources", "Masaüstü Ses": "Desktop Audio",
+    "Son 30 sn'yi kaydet": "Save last 30 s", "Ekran": "Shot", "Klasör": "Folder", "Kayıt klasörü": "Recording folder", "Seç": "Choose",
+    "Dosya adı": "File name", "Sonraki dosya: 2026-10-09 22-20-14.mkv": "Next file: 2026-10-09 22-20-14.mkv",
+    "Bu adla bir dosya zaten var; OBS yenisinin sonuna (1) ekleyerek kaydeder.": "A file with this name already exists; OBS adds (1) to the new one.",
+    "Kare hızı": "Frame rate", "Çözünürlük": "Resolution", "Yerel": "Native", "Biçim": "Format", "Süre yazısı": "Timer font", "Yazı boyutu": "Font size",
+    "Kayıt bitince": "When a recording ends", "Bildirim göster": "Show a notification", "Dosya yolunu panoya kopyala": "Copy the file path to the clipboard",
+    "Düğme biçimi": "Button style", "Daire": "Circle", "Hap": "Pill", "Yalnız simge": "Icon only",
+    "Ne paylaşılsın?": "What should be shared?", "Bir uygulama ekranını görmek istiyor. Birini seç.": "An app wants to see your screen. Pick one.",
+    "Ekranlar": "Screens", "Pencereler (6)": "Windows (6)", "Tüm ekran · eDP-1": "Whole screen · eDP-1", "Bu seçimi hatırla (bir daha sorma)": "Remember this choice (don't ask again)",
+    "İptal": "Cancel", "OBS bağlantısı": "OBS connection"
+  };
+  const SCENES = { "Sahne": "Desktop", "Oyun": "Game", "Kamera": "Camera" };
+  const mockNodes = [];
+  $$(".opanel, .pick-card").forEach(root => {
+    const w = document.createTreeWalker(root, NodeFilter.SHOW_TEXT);
+    for (let n; (n = w.nextNode());) {
+      const tr = n.nodeValue.trim();
+      if (!tr || n.parentElement.closest("[data-i18n]")) continue;
+      const inChips = n.parentElement.closest(".chips");
+      const en = inChips ? SCENES[tr] : MOCK[tr];
+      if (en) mockNodes.push({ n, tr, en, pad: n.nodeValue.replace(tr, "\u0000") });
+    }
+  });
+  function mockFor(lang) {
+    mockNodes.forEach(m => { m.n.nodeValue = m.pad.replace("\u0000", lang === "tr" ? m.tr : m.en); });
+  }
+  shotsFor(root.dataset.theme, "en");
 
   /* ── language ── */
   const TR = {
@@ -47,7 +78,7 @@
     "panel.l3": "Kare hızı seçenekleri ekranına uyar: 144 Hz ekran 120 ve 144 sunar, 60 Hz ekran 120 sunmaz.",
     "panel.l4": "Çözünürlük, biçim ve replay süresi OBS'te anında değişir. Kayıt sürerken OBS'in değiştirmeye izin vermedikleri kilitlenir.",
     "panel.l5": "Süre yazısı, boyutu, düğme biçimi, bildirimler ve OBS portu senin elinde.",
-    "panel.note": "Panel şu an Türkçe çiziliyor.",
+    "panel.note": "Panel İngilizce ve Türkçe konuşur, sistem diline uyar (Görünüm → Dil).",
     "feat.label": "Ayrıntılar", "feat.h": "Küçük şeyler, özenle.",
     "feat.1h": "Her yerden kısayol", "feat.1p": "<code>obscura toggle</code> çubuk kapalıyken de çalışır. OBS de kapalıysa onu arka planda açar ve kaydı başlatır.",
     "feat.2h": "Tıklayınca açılır", "feat.2p": "OBS kapalıyken hapa tıkla; simge durumunda başlar. İkinci bir kopya hiç başlatılmaz.",
@@ -87,10 +118,13 @@
       film.load();
       if (at > 0) film.addEventListener("loadedmetadata", () => { film.currentTime = at; if (!wasPaused) film.play(); }, { once: true });
     }
+    shotsFor(root.dataset.theme, l);
+    mockFor(l);
     $("#lang").textContent = l === "tr" ? "EN" : "TR";
     store.set("obscura-lang", l);
   }
   $("#lang").addEventListener("click", () => setLang(root.lang === "tr" ? "en" : "tr"));
+  mockFor("en");
   const savedLang = store.get("obscura-lang") || ((navigator.language || "").startsWith("tr") ? "tr" : "en");
   if (savedLang === "tr") setLang("tr");
 

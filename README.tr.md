@@ -8,7 +8,7 @@ obscura, zaten kurulu olan OBS'i yerleşik WebSocket sunucusu (obs-websocket v5)
 
 *English: [README.md](README.md)*
 
-<p align="center"><picture><source media="(prefers-color-scheme: light)" srcset="docs/cover-light.png"><img src="docs/cover.png" width="900" alt="obscura: kayıt sırasında çubuk hapı ve paneli"></picture></p>
+<p align="center"><picture><source media="(prefers-color-scheme: light)" srcset="docs/cover-tr-light.png"><img src="docs/cover-tr.png" width="900" alt="obscura: kayıt sırasında çubuk hapı ve paneli"></picture></p>
 
 > Durum: erken ama kullanılabilir. Hyprland, OBS Studio 32 ve Quickshell 0.3 üzerinde derlenip denendi; diğer kurulumlar denenmedi.
 
@@ -19,6 +19,7 @@ obscura, zaten kurulu olan OBS'i yerleşik WebSocket sunucusu (obs-websocket v5)
 - **Ekranına uyan kare hızları.** Panel yalnız ekranının gösterebildiği seçenekleri sunar: 144 Hz ekran 120 ve 144 alır, 60 Hz ekran 120 almaz.
 - **Her yerden çalışan kısayol.** `obscura toggle` çubuk kapalıyken de çalışır; OBS çalışmıyorsa onu arka planda açar.
 - **Kancalar.** Kayıt kaydedilince bildirim, isteğe bağlı olarak yolun panoya kopyalanması ve kendi betiklerin.
+- **İngilizce ve Türkçe arayüz.** Sistem diline uyar (Görünüm sekmesinden değiştirilebilir).
 - **Ekran paylaşımı seçici.** Stok portal diyaloğu yerine Quickshell kurulumunun çizdiği kart (isteğe bağlı, aşağıya bak).
 
 ## Ekran görüntüleri
@@ -27,10 +28,10 @@ Widget'ın kendi koduyla, siyah zeminde, uydurma bir dünyada çizildi (`tools/s
 
 | | |
 |---|---|
-| <picture><source media="(prefers-color-scheme: light)" srcset="docs/screenshots/light/bar-recording.png"><img src="docs/screenshots/bar-recording.png" alt="Kayıtta"></picture> | <picture><source media="(prefers-color-scheme: light)" srcset="docs/screenshots/light/bar-saved.png"><img src="docs/screenshots/bar-saved.png" alt="Kaydedildi"></picture> |
-| <picture><source media="(prefers-color-scheme: light)" srcset="docs/screenshots/light/panel-control.png"><img src="docs/screenshots/panel-control.png" alt="Panel: kontrol"></picture> | <picture><source media="(prefers-color-scheme: light)" srcset="docs/screenshots/light/panel-record.png"><img src="docs/screenshots/panel-record.png" alt="Panel: kayıt ayarları"></picture> |
-| <picture><source media="(prefers-color-scheme: light)" srcset="docs/screenshots/light/panel-folder.png"><img src="docs/screenshots/panel-folder.png" alt="Panel: klasör seçici"></picture> | <picture><source media="(prefers-color-scheme: light)" srcset="docs/screenshots/light/panel-look.png"><img src="docs/screenshots/panel-look.png" alt="Panel: görünüm"></picture> |
-| <picture><source media="(prefers-color-scheme: light)" srcset="docs/screenshots/light/picker-screens.png"><img src="docs/screenshots/picker-screens.png" alt="Ekran paylaşımı seçici: ekranlar"></picture> | <picture><source media="(prefers-color-scheme: light)" srcset="docs/screenshots/light/picker-windows.png"><img src="docs/screenshots/picker-windows.png" alt="Ekran paylaşımı seçici: pencereler"></picture> |
+| <picture><source media="(prefers-color-scheme: light)" srcset="docs/screenshots/tr/light/bar-recording.png"><img src="docs/screenshots/tr/bar-recording.png" alt="Kayıtta"></picture> | <picture><source media="(prefers-color-scheme: light)" srcset="docs/screenshots/tr/light/bar-saved.png"><img src="docs/screenshots/tr/bar-saved.png" alt="Kaydedildi"></picture> |
+| <picture><source media="(prefers-color-scheme: light)" srcset="docs/screenshots/tr/light/panel-control.png"><img src="docs/screenshots/tr/panel-control.png" alt="Panel: kontrol"></picture> | <picture><source media="(prefers-color-scheme: light)" srcset="docs/screenshots/tr/light/panel-record.png"><img src="docs/screenshots/tr/panel-record.png" alt="Panel: kayıt ayarları"></picture> |
+| <picture><source media="(prefers-color-scheme: light)" srcset="docs/screenshots/tr/light/panel-folder.png"><img src="docs/screenshots/tr/panel-folder.png" alt="Panel: klasör seçici"></picture> | <picture><source media="(prefers-color-scheme: light)" srcset="docs/screenshots/tr/light/panel-look.png"><img src="docs/screenshots/tr/panel-look.png" alt="Panel: görünüm"></picture> |
+| <picture><source media="(prefers-color-scheme: light)" srcset="docs/screenshots/tr/light/picker-screens.png"><img src="docs/screenshots/tr/picker-screens.png" alt="Ekran paylaşımı seçici: ekranlar"></picture> | <picture><source media="(prefers-color-scheme: light)" srcset="docs/screenshots/tr/light/picker-windows.png"><img src="docs/screenshots/tr/picker-windows.png" alt="Ekran paylaşımı seçici: pencereler"></picture> |
 
 ## Tasarım hedefleri
 

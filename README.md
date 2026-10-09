@@ -19,6 +19,7 @@ obscura drives the OBS you already have through its built-in WebSocket server (o
 - **Frame rates that fit your screen.** The panel offers only what your display can show: a 144 Hz screen gets 120 and 144, a 60 Hz one does not get 120.
 - **A shortcut that works from anywhere.** `obscura toggle` works with the bar closed, and opens OBS in the background if it is not running.
 - **Hooks.** A notification when a recording is saved, optionally the path on the clipboard, and your own scripts.
+- **English and Turkish UI**, following the system language (changeable in the Look tab).
 - **A screen-share picker** drawn by your Quickshell setup instead of the stock portal dialog (optional, see below).
 
 ## Screenshots
@@ -86,7 +87,7 @@ obscura pause
 
 ## Connection
 
-obscura reads the port and password from OBS's own settings. To use another port, set it in the panel (Görünüm > OBS bağlantısı), with `obscura config set obs_port 4466`, or with `OBSCURA_PORT`. 0 means "use OBS's setting".
+obscura reads the port and password from OBS's own settings. To use another port, set it in the panel (Look > OBS connection), with `obscura config set obs_port 4466`, or with `OBSCURA_PORT`. 0 means "use OBS's setting".
 
 ## Hooks
 

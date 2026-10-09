@@ -63,7 +63,7 @@
     "inst.2h": "Derle",
     "inst.3h": "Çubuğuna ekle", "inst.3p": "Modülü Quickshell yapılandırmana koy ve hapı istediğin yere yerleştir. <code>pal</code> renk nesnen, <code>u</code> ölçek birimin.",
     "inst.4h": "Bir tuşa bağla",
-    "shots.label": "Ekran görüntüleri", "shots.h": "Gerçek widget, siyah zeminde.",
+    "shots.label": "Ekran görüntüleri", "shots.h": "Gerçek widget, iki temada.",
     "shots.c1": "Kayıtta", "shots.c2": "Kaydedildi", "shots.c3": "OBS sunucusu kapalıyken", "shots.c4": "Kontrol", "shots.c5": "Kayıt ayarları, ad alınmış uyarısıyla", "shots.c6": "Klasör seçici", "shots.c7": "Görünüm ve kancalar", "shots.c8": "Ekran paylaşımı seçici: ekranlar", "shots.c9": "Ekran paylaşımı seçici: pencereler",
     "shots.note": "Widget'ın kendi koduyla, uydurma bir dünyada çizildi; burada gerçek bir masaüstünden hiçbir şey yok.",
     "film.cap": "Kurulumun tamamı, baştan sona: OBS, derleme, çubuk, kısayol (82 sn, sessiz).",

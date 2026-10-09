@@ -10,6 +10,7 @@
   --ok: #9dd6a4;
   --warn: #e3cd92;
   --stage: #a9ada1;
+  --shot-bg: #000000;
 
   /* the widget's own colours, same in both themes */
   --w-base: #0e0e0e;
@@ -36,6 +37,7 @@
   --ink-3: #8a8a8f;
   --rule: rgba(0, 0, 0, 0.1);
   --code: #ebeae5;
+  --shot-bg: #ffffff;
   --accent: #d4574c;
   color-scheme: light;
 }
@@ -246,10 +248,10 @@ code { font-size: 0.88em; background: var(--code); border: 1px solid var(--rule)
 .pick-copy p { color: var(--ink-2); max-width: 520px; }
 
 /* gallery */
-.gallery { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 14px; }
-.gallery figure { margin: 0; background: #000; border: 1px solid var(--rule); border-radius: 18px; overflow: hidden; display: flex; flex-direction: column; }
+.gallery { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 14px; align-items: start; }
+.gallery figure { margin: 0; background: var(--shot-bg); border: 1px solid var(--rule); border-radius: 18px; overflow: hidden; display: flex; flex-direction: column; }
 .gallery img { display: block; width: 100%; height: auto; }
-.gallery figcaption { font-size: 13px; color: #a3a3a3; padding: 0 16px 14px; margin-top: auto; }
+.gallery figcaption { font-size: 13px; color: var(--ink-2); padding: 0 16px 14px; margin-top: auto; }
 @media (max-width: 900px) { .gallery { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
 @media (max-width: 560px) { .gallery { grid-template-columns: 1fr; } }
 
